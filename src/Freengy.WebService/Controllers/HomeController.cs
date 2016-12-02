@@ -1,35 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿// Created by Laxale 01.12.2016
+//
+//
 
-namespace Freengy.WebService.Controllers
+
+namespace Freengy.WebService.Controllers 
 {
-    public class HomeController : Controller
+    using Microsoft.AspNetCore.Mvc;
+    
+    public class HomeController : Controller 
     {
-        public IActionResult Index()
+        public IActionResult Index() 
         {
-            return View();
+            return this.View();
         }
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
 
-            return View();
+        public IActionResult About() 
+        {
+            this.ViewData["Message"] = "Your application description page.";
+
+            return this.View();
         }
 
-        public IActionResult Contact()
+        public IActionResult Contact() 
         {
-            ViewData["Message"] = "Your contact page.";
+            this.ViewData["Message"] = "Your contact page.";
 
-            return View();
+            return this.View();
         }
 
-        public IActionResult Error()
+        public IActionResult Error() 
         {
-            return View();
+            return this.View();
         }
     }
 }

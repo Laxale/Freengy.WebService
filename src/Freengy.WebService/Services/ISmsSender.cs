@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// Created by Laxale 01.12.2016
+//
+//
 
-namespace Freengy.WebService.Services
+
+namespace Freengy.WebService.Services 
 {
-    public interface ISmsSender
+    using System.Threading.Tasks;
+
+    public interface ISmsSender 
     {
         Task SendSmsAsync(string number, string message);
     }

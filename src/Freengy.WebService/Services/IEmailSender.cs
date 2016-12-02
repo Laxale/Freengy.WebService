@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// Created by Laxale 01.12.2016
+//
+//
+
 
 namespace Freengy.WebService.Services
 {
-    public interface IEmailSender
+    using System.Threading.Tasks;
+
+    public interface IEmailSender 
     {
         Task SendEmailAsync(string email, string subject, string message);
     }
