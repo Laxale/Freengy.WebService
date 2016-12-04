@@ -7,3 +7,6 @@
     It seems as the dotnet tools got corrupted for some reason that the dotnet restore couldnt resolve. 
     I tried to clear the package cache etc before I ran the above. 
     After I reinstalled the package dotnet crashed and after that it has begun to work again.
+
+1. SharedWebTypes project cannot be used in .net core if was built in normal .net framework environment 
+   (though targeting .net core 1.1). So move shared types to a core solution and then distribute dll to clients.
