@@ -7,15 +7,19 @@ namespace Freengy.WebService.Data
 {
     using Microsoft.EntityFrameworkCore;
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-    
-    using Freengy.WebService.Models;
-    
-    public class UsersDbContext : IdentityDbContext<ApplicationUser> 
-    {
-        public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options) 
-        {
 
+    using Freengy.WebService.Models;
+    using Freengy.SharedWebTypes.Objects;
+
+    //    public class UsersDbContext : IdentityDbContext<ApplicationUser> 
+    public class UsersDbContext : DbContext 
+    {
+        public UsersDbContext(DbContextOptions options) : base(options) 
+        {
+            
         }
+
+        public DbSet<UserAccount> FreengyUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder) 
         {

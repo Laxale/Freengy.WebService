@@ -4534,6 +4534,19 @@
         "runtime": {
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
         }
+      },
+      "Freengy.SharedWebTypes/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.1",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0"
+        },
+        "compile": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        },
+        "runtime": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        }
       }
     },
     ".NETCoreApp,Version=v1.1/win10-x64": {
@@ -9141,6 +9154,19 @@
         },
         "runtime": {
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
+        }
+      },
+      "Freengy.SharedWebTypes/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.1",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0"
+        },
+        "compile": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        },
+        "runtime": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
         }
       }
     },
@@ -13881,6 +13907,19 @@
         "runtime": {
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
         }
+      },
+      "Freengy.SharedWebTypes/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.1",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0"
+        },
+        "compile": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        },
+        "runtime": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        }
       }
     },
     ".NETCoreApp,Version=v1.1/win8-x64": {
@@ -18524,6 +18563,19 @@
         "runtime": {
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
         }
+      },
+      "Freengy.SharedWebTypes/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.1",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0"
+        },
+        "compile": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        },
+        "runtime": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        }
       }
     },
     ".NETCoreApp,Version=v1.1/win81-x64": {
@@ -23148,6 +23200,19 @@
         },
         "runtime": {
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
+        }
+      },
+      "Freengy.SharedWebTypes/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.1",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0"
+        },
+        "compile": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
+        },
+        "runtime": {
+          "netcoreapp1.1/Freengy.SharedWebTypes.dll": {}
         }
       }
     }
@@ -30968,10 +31033,16 @@
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._"
       ]
+    },
+    "Freengy.SharedWebTypes/1.0.0": {
+      "type": "project",
+      "path": "../Freengy.SharedWebTypes/project.json",
+      "msbuildProject": "../Freengy.SharedWebTypes/Freengy.SharedWebTypes.xproj"
     }
   },
   "projectFileDependencyGroups": {
     "": [
+      "Freengy.SharedWebTypes >= 1.0.0-*",
       "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore >= 1.1.0",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 1.1.0",
       "Microsoft.AspNetCore.Mvc >= 1.1.0",
@@ -30994,6 +31065,7 @@
       "Microsoft.VisualStudio.Web.BrowserLink.Loader >= 14.1.0",
       "Microsoft.VisualStudio.Web.CodeGeneration.Tools >= 1.1.0-preview4-final",
       "Microsoft.VisualStudio.Web.CodeGenerators.Mvc >= 1.1.0-preview4-final",
+      "Newtonsoft.Json >= 9.0.1",
       "System.Interactive.Async >= 3.1.1"
     ],
     ".NETCoreApp,Version=v1.1": []

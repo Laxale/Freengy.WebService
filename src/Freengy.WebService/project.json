@@ -2,6 +2,7 @@
   "userSecretsId": "aspnet-Freengy.WebService-e2993580-8b47-40f9-a210-6c54044fc1b6",
 
   "dependencies": {
+    "Freengy.SharedWebTypes": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.1.0",
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0",
     "Microsoft.AspNetCore.Mvc": "1.1.0",
@@ -33,6 +34,7 @@
     "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0",
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": "1.1.0-preview4-final",
     "Microsoft.VisualStudio.Web.CodeGenerators.Mvc": "1.1.0-preview4-final",
+    "Newtonsoft.Json": "9.0.1",
     "System.Interactive.Async": "3.1.1"
   },
 
