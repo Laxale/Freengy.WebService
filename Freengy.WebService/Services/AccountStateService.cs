@@ -43,6 +43,29 @@ namespace Freengy.WebService.Services
             }
         }
 
+        public AccountOnlineStatus LogIn(Guid userId) 
+        {
+            UserAccount account = RegistrationService.Instance.FindById(userId);
+
+            if (account == null)
+            {
+                return AccountOnlineStatus.DoesntExist;
+            }
+
+            return LogIn(account);
+        }
+
+        public AccountOnlineStatus LogIn(string userName) 
+        {
+            UserAccount account = RegistrationService.Instance.FindByName(userName);
+
+            if (account == null)
+            {
+                return AccountOnlineStatus.DoesntExist;
+            }
+
+            return LogIn(account);
+        }
 
         public AccountOnlineStatus LogIn(UserAccount account) 
         {

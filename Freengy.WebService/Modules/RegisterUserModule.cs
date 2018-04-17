@@ -49,7 +49,7 @@ namespace Freengy.WebService.Modules
             registrationRequest.RegistrationTime = DateTime.Now;
 
             Console.WriteLine($"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }");
-            string jsonResponce = JsonConvert.SerializeObject(registrationRequest);
+            string jsonResponce = JsonConvert.SerializeObject(registrationRequest, Formatting.Indented);
 
             return jsonResponce;
         }

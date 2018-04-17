@@ -98,5 +98,17 @@ namespace Freengy.WebService.Services
                 return foundUser;
             }
         }
+
+        public UserAccount FindByName(string userName) 
+        {
+            if (string.IsNullOrWhiteSpace(userName)) throw new ArgumentNullException(nameof(userName));
+
+            lock (Locker)
+            {
+                UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
+
+                return foundUser;
+            }
+        }
     }
 }

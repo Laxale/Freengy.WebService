@@ -3,20 +3,23 @@
 //
 
 using System;
-using System.Collections.ObjectModel;
+
+using Freengy.WebService.Enums;
 using Freengy.WebService.Helpers;
 using Freengy.WebService.Models;
-using Freengy.WebService.Modules;
+using Freengy.WebService.Services;
 
 using Nancy;
 
+using Newtonsoft.Json;
 
-namespace Freengy.WebService.Services 
+
+namespace Freengy.WebService.Modules 
 {
     /// <summary>
     /// Module for user log in action.
     /// </summary>
-    internal class LogInModule : NancyModule 
+    public class LogInModule : NancyModule 
     {
         public LogInModule()
         {
@@ -32,11 +35,15 @@ namespace Freengy.WebService.Services
 
             var accountService = AccountStateService.Instance;
 
-            RegistrationRequest registrationRequest = new SerializeHelper().DeserializeObject<RegistrationRequest>(Request.Body);
+            LogInRequest logInRequest = new SerializeHelper().DeserializeObject<LogInRequest>(Request.Body);
 
-            accountService.LogIn()
+            AccountOnlineStatus result = accountService.LogIn(logInRequest.UserName);
 
-            return "yep!";
+            logInRequest.LogInStatus = result;
+
+            string responce = JsonConvert.SerializeObject(logInRequest, Formatting.Indented);
+
+            return responce;
         }
     }
 }
