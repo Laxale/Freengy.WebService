@@ -1,9 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Created by Laxale 17.04.2018
+//
+//
+
+using System;
 using System.Threading.Tasks;
+
 using Freengy.WebService.Interfaces;
+
 
 namespace Freengy.WebService.Models
 {
@@ -12,5 +15,7 @@ namespace Freengy.WebService.Models
         public Guid Id { set; get; }
 
         public string Name { get; set; }
+
+        public DateTime RegistrationTime { get; set; }
     }
 }

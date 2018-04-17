@@ -3,10 +3,19 @@
 //
 
 using System;
+using System.IO;
+using Freengy.WebService.Enums;
+using Freengy.WebService.Helpers;
+using Freengy.WebService.Models;
 using Freengy.WebService.Services;
+
+using NLog;
+
 using Nancy;
 using Nancy.Security;
-using NLog;
+
+using Newtonsoft.Json;
+
 
 namespace Freengy.WebService.Modules
 {
@@ -30,9 +39,19 @@ namespace Freengy.WebService.Modules
             //logger.Info();
             Console.WriteLine("Incame register request:");
 
-            var service = UserAccountService.Instance;
+            RegistrationRequest registrationRequest = new SerializeHelper().DeserializeObject<RegistrationRequest>(Request.Body);
+            
+            var service = RegistrationService.Instance;
 
-            return "Go register yourself";
+            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest.UserName);
+
+            registrationRequest.Status = registrationStatus;
+            registrationRequest.RegistrationTime = DateTime.Now;
+
+            Console.WriteLine($"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }");
+            string jsonResponce = JsonConvert.SerializeObject(registrationRequest);
+
+            return jsonResponce;
         }
     }
 }

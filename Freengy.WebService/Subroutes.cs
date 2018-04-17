@@ -19,5 +19,10 @@ namespace Freengy.WebService
         /// Register new user subroute.
         /// </summary>
         public static readonly string Register = "/register";
+
+        /// <summary>
+        /// Log in subroute.
+        /// </summary>
+        public static readonly string Login = "/login";
     }
 }
