@@ -1,5 +1,0 @@
-﻿{
-  "server": "Microsoft.AspNetCore.Server.Kestrel",
-  //"urls": "https://localhost:44000/"
-  "urls": "http://localhost:44000/"
-}
