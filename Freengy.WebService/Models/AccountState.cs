@@ -3,7 +3,9 @@
 //
 
 using System;
-using Freengy.WebService.Enums;
+
+using Freengy.Common.Enums;
+using Freengy.Common.Models;
 
 
 namespace Freengy.WebService.Models 

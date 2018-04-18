@@ -4,9 +4,10 @@
 
 using System;
 using System.IO;
-using Freengy.WebService.Enums;
-using Freengy.WebService.Helpers;
-using Freengy.WebService.Models;
+
+using Freengy.Common.Enums;
+using Freengy.Common.Helpers;
+using Freengy.Common.Models;
 using Freengy.WebService.Services;
 
 using NLog;
@@ -39,14 +40,14 @@ namespace Freengy.WebService.Modules
             //logger.Info();
             Console.WriteLine("Incame register request:");
 
-            RegistrationRequest registrationRequest = new SerializeHelper().DeserializeObject<RegistrationRequest>(Request.Body);
+            RegistrationRequestModel registrationRequest = new SerializeHelper().DeserializeObject<RegistrationRequestModel>(Request.Body);
             
             var service = RegistrationService.Instance;
 
-            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest.UserName);
+            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest.UserName, out UserAccount registeredAcc);
 
             registrationRequest.Status = registrationStatus;
-            registrationRequest.RegistrationTime = DateTime.Now;
+            registrationRequest.CreatedAccount = registeredAcc;
 
             Console.WriteLine($"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }");
             string jsonResponce = JsonConvert.SerializeObject(registrationRequest, Formatting.Indented);

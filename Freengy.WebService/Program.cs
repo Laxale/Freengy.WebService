@@ -3,7 +3,9 @@
 //
 
 using System;
-
+using Freengy.Common.Constants;
+using Freengy.Database;
+using Freengy.WebService.Constants;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Hosting.Self;
@@ -22,12 +24,13 @@ namespace Freengy.WebService
         //private static readonly string httpsAddress = $"https://www.murk.pro:{ httpsPort }";
 
 
-        static void Main(string[] args) 
+        private static void Main(string[] args) 
         {
             try
             {
                 Console.WriteLine("Starting Freengy server");
 
+                InitDatabase();
                 StartServer();
 
                 Console.WriteLine("Finished Freengy server");
@@ -44,7 +47,14 @@ namespace Freengy.WebService
         }
 
 
-        static void StartServer() 
+        private static void InitDatabase() 
+        {
+            string appDataFolderPath = Initializer.GetFolderPathInAppData(FreengyPaths.AppDataRootFolderName);
+            Initializer.SetStorageDirectoryPath(appDataFolderPath);
+            Initializer.SetDbFileName(ServiceDbConst.DbFileName);
+        }
+
+        private static void StartServer() 
         {
             var baseUri = new Uri(httpAddress);
             //var baseUri = new Uri(httpsAddress);
@@ -67,7 +77,7 @@ namespace Freengy.WebService
             }
         }
 
-        static HostConfiguration CreateConfiguration() 
+        private static HostConfiguration CreateConfiguration() 
         {
             var config = new HostConfiguration
             {
@@ -86,12 +96,12 @@ namespace Freengy.WebService
             return config;
         }
 
-        static INancyBootstrapper CreateBootstrapper() 
+        private static INancyBootstrapper CreateBootstrapper() 
         {
             return new DefaultNancyBootstrapper();
         }
 
-        static void EnableSsl() 
+        private static void EnableSsl() 
         {
             string command = $"netsh http add sslcert ipport=0.0.0.0:{ httpsPort } certhash={ murkCertHash } appid={ appPid } clientcertnegotiation=enable";
             //var commandBytes = Encoding.UTF8.GetBytes(command);

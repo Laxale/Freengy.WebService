@@ -4,11 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Freengy.WebService.Enums;
+using Freengy.Common.Enums;
+using Freengy.Common.Models;
+using Freengy.Common.Restrictions;
+using Freengy.Database.Context;
 using Freengy.WebService.Models;
 
 using NLog;
@@ -31,7 +33,7 @@ namespace Freengy.WebService.Services
 
         private RegistrationService() 
         {
-
+            ReadAccounts();
         }
 
 
@@ -50,33 +52,50 @@ namespace Freengy.WebService.Services
         }
 
 
-        public RegistrationStatus RegisterAccount(string userName) 
+        public RegistrationStatus RegisterAccount(string userName, out UserAccount registeredAcc) 
         {
+            var newId = Guid.NewGuid();
             var newAccount = new UserAccount
             {
-                Id = Guid.NewGuid(),
+                UniqueId = newId,
+                Id = newId.ToString(),
                 Name = userName
             };
 
-            return RegisterAccount(newAccount);
+            RegistrationStatus result = RegisterAccount(newAccount, out newAccount);
+
+            registeredAcc = newAccount;
+
+            return result;
         }
 
-        public RegistrationStatus RegisterAccount(UserAccount newAccount) 
+        public RegistrationStatus RegisterAccount(UserAccount newAccount, out UserAccount registeredAcc) 
         {
             lock (Locker)
             {
+                registeredAcc = null;
+
                 try
                 {
-                    UserAccount existingAccount = FindById(newAccount.Id);
+                    UserAccount existingAccount = FindByName(newAccount.Name);
 
-                    if (existingAccount == null)
+                    if (existingAccount != null)
                     {
-                        registeredAccounts.Add(newAccount);
-
-                        return RegistrationStatus.Registered;
+                        return RegistrationStatus.AlreadyExists;
                     }
 
-                    return RegistrationStatus.AlreadyExists;
+                    UserAccount trimmedAccount = new AccountValidator(newAccount).Trim();
+
+                    AddToDatabase(trimmedAccount);
+
+                    trimmedAccount.RegistrationTime = DateTime.Now;
+
+                    registeredAccounts.Add(trimmedAccount);
+
+                    registeredAcc = trimmedAccount;
+
+                    return RegistrationStatus.Registered;
+
                 }
                 catch (Exception ex)
                 {
@@ -93,7 +112,7 @@ namespace Freengy.WebService.Services
         {
             lock (Locker)
             {
-                UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Id == userId);
+                UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == userId);
 
                 return foundUser;
             }
@@ -108,6 +127,32 @@ namespace Freengy.WebService.Services
                 UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
 
                 return foundUser;
+            }
+        }
+
+
+        private void AddToDatabase(UserAccount newAccount) 
+        {
+            using (var dbContext = new SimpleDbContext<UserAccount>())
+            {
+                var objects = dbContext.Objects;
+                if (objects.FirstOrDefault(acc => acc.Id == newAccount.Id) == null)
+                {
+                    dbContext.Objects.Add(newAccount);
+
+                    dbContext.SaveChanges();
+                }
+            }
+        }
+
+        private void ReadAccounts() 
+        {
+            using (var dbContext = new SimpleDbContext<UserAccount>())
+            {
+                foreach (UserAccount account in dbContext.Objects)
+                {
+                    registeredAccounts.Add(account);
+                }
             }
         }
     }

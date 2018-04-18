@@ -4,8 +4,9 @@
 
 using System;
 
-using Freengy.WebService.Enums;
-using Freengy.WebService.Helpers;
+using Freengy.Common.Enums;
+using Freengy.Common.Helpers;
+using Freengy.Common.Models;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 
@@ -21,7 +22,7 @@ namespace Freengy.WebService.Modules
     /// </summary>
     public class LogInModule : NancyModule 
     {
-        public LogInModule()
+        public LogInModule() 
         {
             Console.WriteLine($"Created { nameof(LogInModule) }");
 
@@ -31,15 +32,17 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnLoginRequest(dynamic arg) 
         {
-            Console.WriteLine("Got log in request");
-
             var accountService = AccountStateService.Instance;
 
-            LogInRequest logInRequest = new SerializeHelper().DeserializeObject<LogInRequest>(Request.Body);
+            LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
+
+            Console.WriteLine($"Got '{ logInRequest.UserName }' log in request");
 
             AccountOnlineStatus result = accountService.LogIn(logInRequest.UserName);
 
             logInRequest.LogInStatus = result;
+
+            Console.WriteLine($"'{ logInRequest.UserName }' log in result: { result }");
 
             string responce = JsonConvert.SerializeObject(logInRequest, Formatting.Indented);
 

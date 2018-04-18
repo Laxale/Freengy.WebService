@@ -8,7 +8,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Freengy.WebService.Enums;
+using Freengy.Common.Enums;
+using Freengy.Common.Models;
 using Freengy.WebService.Models;
 
 
@@ -69,7 +70,7 @@ namespace Freengy.WebService.Services
 
         public AccountOnlineStatus LogIn(UserAccount account) 
         {
-            if (account.Id == Guid.Empty)
+            if (account.UniqueId == Guid.Empty)
             {
                 throw new InvalidOperationException("Account Id is empty");
             }
