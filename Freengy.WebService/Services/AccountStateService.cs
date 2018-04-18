@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
-using Freengy.WebService.Models;
 
 
 namespace Freengy.WebService.Services 
@@ -44,31 +43,25 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public AccountOnlineStatus LogIn(Guid userId) 
-        {
-            UserAccount account = RegistrationService.Instance.FindById(userId);
 
-            if (account == null)
-            {
-                return AccountOnlineStatus.DoesntExist;
-            }
-
-            return LogIn(account);
-        }
-
-        public AccountOnlineStatus LogIn(string userName) 
+        public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState) 
         {
             UserAccount account = RegistrationService.Instance.FindByName(userName);
 
             if (account == null)
             {
+                loggedAccountState = null;
                 return AccountOnlineStatus.DoesntExist;
             }
 
-            return LogIn(account);
+            AccountOnlineStatus result = LogIn(account, out AccountState state);
+            loggedAccountState = state;
+
+            return result;
         }
 
-        public AccountOnlineStatus LogIn(UserAccount account) 
+
+        private AccountOnlineStatus LogIn(UserAccount account, out AccountState loggedAccountState) 
         {
             if (account.UniqueId == Guid.Empty)
             {
@@ -77,22 +70,30 @@ namespace Freengy.WebService.Services
 
             lock (Locker)
             {
-                AccountState loggedAccount = accountStates.FirstOrDefault(state => state.Account.Id == account.Id);
+                AccountState accountState = accountStates.FirstOrDefault(state => state.Account.Id == account.Id);
 
-                if (loggedAccount == null)
+                if (accountState == null)
                 {
-                    var newState = new AccountState(account)
+                    account.LastLogInTime = DateTime.Now;
+
+                    var newState = new AccountState
                     {
-                        LastLogInTime = DateTime.Now,
+                        Account = account,
                         OnlineStatus = AccountOnlineStatus.Online
                     };
 
                     accountStates.Add(newState);
+                    loggedAccountState = newState;
 
                     return AccountOnlineStatus.Online;
                 }
 
-                return loggedAccount.OnlineStatus;
+                accountState.Account.LastLogInTime = DateTime.Now;
+                loggedAccountState = accountState;
+
+                AccountDbInteracter.Instance.AddOrUpdate(accountState.Account);
+
+                return accountState.OnlineStatus;
             }
         }
     }

@@ -7,7 +7,6 @@ using System;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
-using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 
 using Nancy;
@@ -36,15 +35,13 @@ namespace Freengy.WebService.Modules
 
             LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
 
-            Console.WriteLine($"Got '{ logInRequest.UserName }' log in request");
+            Console.WriteLine($"Got '{ logInRequest.Account.Name }' log in request");
 
-            AccountOnlineStatus result = accountService.LogIn(logInRequest.UserName);
+            AccountOnlineStatus result = accountService.LogIn(logInRequest.Account.Name, out AccountState accountState);
 
-            logInRequest.LogInStatus = result;
+            Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { result }");
 
-            Console.WriteLine($"'{ logInRequest.UserName }' log in result: { result }");
-
-            string responce = JsonConvert.SerializeObject(logInRequest, Formatting.Indented);
+            string responce = JsonConvert.SerializeObject(accountState, Formatting.Indented);
 
             return responce;
         }

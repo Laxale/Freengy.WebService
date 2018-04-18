@@ -11,7 +11,6 @@ using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Restrictions;
 using Freengy.Database.Context;
-using Freengy.WebService.Models;
 
 using NLog;
 
@@ -54,13 +53,12 @@ namespace Freengy.WebService.Services
 
         public RegistrationStatus RegisterAccount(string userName, out UserAccount registeredAcc) 
         {
-            var newId = Guid.NewGuid();
             var newAccount = new UserAccount
             {
-                UniqueId = newId,
-                Id = newId.ToString(),
                 Name = userName
             };
+
+            newAccount.UniqueId = Guid.Parse(newAccount.Id);
 
             RegistrationStatus result = RegisterAccount(newAccount, out newAccount);
 
@@ -69,7 +67,8 @@ namespace Freengy.WebService.Services
             return result;
         }
 
-        public RegistrationStatus RegisterAccount(UserAccount newAccount, out UserAccount registeredAcc) 
+
+        private RegistrationStatus RegisterAccount(UserAccount newAccount, out UserAccount registeredAcc) 
         {
             lock (Locker)
             {
@@ -86,9 +85,9 @@ namespace Freengy.WebService.Services
 
                     UserAccount trimmedAccount = new AccountValidator(newAccount).Trim();
 
-                    AddToDatabase(trimmedAccount);
-
                     trimmedAccount.RegistrationTime = DateTime.Now;
+
+                    AccountDbInteracter.Instance.AddOrUpdate(trimmedAccount);
 
                     registeredAccounts.Add(trimmedAccount);
 
@@ -126,24 +125,12 @@ namespace Freengy.WebService.Services
             {
                 UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
 
+                foundUser?.SyncUniqueIdToId();
+
                 return foundUser;
             }
         }
 
-
-        private void AddToDatabase(UserAccount newAccount) 
-        {
-            using (var dbContext = new SimpleDbContext<UserAccount>())
-            {
-                var objects = dbContext.Objects;
-                if (objects.FirstOrDefault(acc => acc.Id == newAccount.Id) == null)
-                {
-                    dbContext.Objects.Add(newAccount);
-
-                    dbContext.SaveChanges();
-                }
-            }
-        }
 
         private void ReadAccounts() 
         {

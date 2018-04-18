@@ -86,12 +86,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants\ServiceDbConst.cs" />
-    <Compile Include="Models\AccountState.cs" />
     <Compile Include="Modules\HelloModule.cs" />
     <Compile Include="Modules\RegisterUserModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modules\LogInModule.cs" />
+    <Compile Include="Services\AccountDbInteracter.cs" />
     <Compile Include="Services\AccountStateService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Subroutes.cs" />
