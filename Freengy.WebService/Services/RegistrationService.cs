@@ -131,6 +131,41 @@ namespace Freengy.WebService.Services
             }
         }
 
+        public IEnumerable<UserAccount> FindByNameFilter(string nameFilter) 
+        {
+            if (string.IsNullOrWhiteSpace(nameFilter)) return new List<UserAccount>();
+
+            lock (Locker)
+            {
+                Func<UserAccount, bool> selector;
+                if(string.IsNullOrWhiteSpace(nameFilter))
+                {
+                    selector = acc =>
+                    {
+                        acc.SyncUniqueIdToId();
+                        return true;
+                    };
+                }
+                else
+                {
+                    selector = acc =>
+                    {
+                        if (acc.Name.Contains(nameFilter))
+                        {
+                            acc.SyncUniqueIdToId();
+                            return true;
+                        }
+
+                        return false;
+                    };
+                }
+
+                IEnumerable<UserAccount> foundUsers = registeredAccounts.Where(selector);
+                
+                return foundUsers;
+            }
+        }
+
 
         private void ReadAccounts() 
         {

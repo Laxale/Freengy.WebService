@@ -3,8 +3,13 @@
 //
 
 using System;
-
+using System.Collections.Generic;
+using Freengy.Common.Enums;
+using Freengy.Common.Helpers;
+using Freengy.Common.Models;
+using Freengy.WebService.Services;
 using Nancy;
+using Newtonsoft.Json;
 
 
 namespace Freengy.WebService.Modules 
@@ -33,9 +38,21 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnSearchUsersRequest(dynamic arg) 
         {
-            var 
-            Console.WriteLine("Got searching user request");
+            Console.WriteLine("Got searching users request");
 
+            var helper = new SerializeHelper();
+            var searchRequest = helper.DeserializeObject<SearchRequest>(Request.Body);
+
+            if (searchRequest.Entity == SearchEntity.Users)
+            {
+                IEnumerable<UserAccount> users = RegistrationService.Instance.FindByNameFilter(searchRequest.SearchFilter);
+
+                var responce = helper.Serialize(users);
+
+                return responce;
+            }
+
+            // only user search for the moment
             throw new NotImplementedException();
         }
     }

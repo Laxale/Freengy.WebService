@@ -40,7 +40,8 @@ namespace Freengy.WebService.Modules
             //logger.Info();
             Console.WriteLine("Incame register request:");
 
-            RegistrationRequestModel registrationRequest = new SerializeHelper().DeserializeObject<RegistrationRequestModel>(Request.Body);
+            var helper = new SerializeHelper();
+            var registrationRequest = helper.DeserializeObject<RegistrationRequest>(Request.Body);
             
             var service = RegistrationService.Instance;
 
@@ -50,7 +51,7 @@ namespace Freengy.WebService.Modules
             registrationRequest.CreatedAccount = registeredAcc;
 
             Console.WriteLine($"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }");
-            string jsonResponce = JsonConvert.SerializeObject(registrationRequest, Formatting.Indented);
+            string jsonResponce = helper.Serialize(registrationRequest);
 
             return jsonResponce;
         }
