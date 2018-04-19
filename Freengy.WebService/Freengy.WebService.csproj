@@ -85,11 +85,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ComplexFriendRequestConfiguration.cs" />
     <Compile Include="Configuration\ComplexUserConfiguration.cs" />
     <Compile Include="Configuration\FriendshipConfiguration.cs" />
     <Compile Include="Constants\ServiceDbConst.cs" />
+    <Compile Include="Context\ComplexFriendRequestContext.cs" />
     <Compile Include="Context\ComplexUserContext.cs" />
+    <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
+    <Compile Include="Models\ComplexFriendRequest.cs" />
     <Compile Include="Models\ComplexUserAccount.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
     <Compile Include="Modules\FriendRequestModule.cs" />
@@ -101,6 +105,7 @@
     <Compile Include="Modules\LogInModule.cs" />
     <Compile Include="Services\AccountDbInteracter.cs" />
     <Compile Include="Services\AccountStateService.cs" />
+    <Compile Include="Services\FriendRequestService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Subroutes.cs" />
   </ItemGroup>

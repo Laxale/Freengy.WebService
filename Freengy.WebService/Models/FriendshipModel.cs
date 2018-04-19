@@ -46,7 +46,7 @@ namespace Freengy.WebService.Models
             return this;
         }
 
-        protected override List<string> GetIncludedPropNames() 
+        protected override IEnumerable<string> GetIncludedPropNames() 
         {
             return new List<string>
             {

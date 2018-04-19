@@ -45,9 +45,18 @@ namespace Freengy.WebService.Modules
             var helper = new SerializeHelper();
             var searchRequest = helper.DeserializeObject<SearchRequest>(Request.Body);
 
+            if (searchRequest.SenderId == Guid.Empty)
+            {
+                throw new InvalidOperationException("Empty sender Id");
+            }
+
             if (searchRequest.Entity == SearchEntity.Users)
             {
-                IEnumerable<ComplexUserAccount> users = RegistrationService.Instance.FindByNameFilter(searchRequest.SearchFilter);
+                IEnumerable<ComplexUserAccount> users = 
+                    RegistrationService
+                        .Instance
+                        .FindByNameFilter(searchRequest.SearchFilter)
+                        .Where(acc => acc.UniqueId != searchRequest.SenderId);
 
                 var responce = helper.Serialize(users);
 
