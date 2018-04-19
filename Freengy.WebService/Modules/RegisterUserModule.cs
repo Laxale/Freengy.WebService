@@ -8,6 +8,7 @@ using System.IO;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 
 using NLog;
@@ -45,7 +46,7 @@ namespace Freengy.WebService.Modules
             
             var service = RegistrationService.Instance;
 
-            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest.UserName, out UserAccount registeredAcc);
+            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest.UserName, out ComplexUserAccount registeredAcc);
 
             registrationRequest.Status = registrationStatus;
             registrationRequest.CreatedAccount = registeredAcc;

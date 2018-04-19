@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
+using Freengy.WebService.Models;
 
 
 namespace Freengy.WebService.Services 
@@ -46,7 +47,7 @@ namespace Freengy.WebService.Services
 
         public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState) 
         {
-            UserAccount account = RegistrationService.Instance.FindByName(userName);
+            ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
 
             if (account == null)
             {
@@ -91,7 +92,7 @@ namespace Freengy.WebService.Services
                 accountState.Account.LastLogInTime = DateTime.Now;
                 loggedAccountState = accountState;
 
-                AccountDbInteracter.Instance.AddOrUpdate(accountState.Account);
+                AccountDbInteracter.Instance.AddOrUpdate((ComplexUserAccount)accountState.Account);
 
                 return accountState.OnlineStatus;
             }

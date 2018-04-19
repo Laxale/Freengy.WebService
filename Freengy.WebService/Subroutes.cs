@@ -39,7 +39,21 @@ namespace Freengy.WebService
             /// <summary>
             /// Search users subroute.
             /// </summary>
-            public static readonly string SearchUsers = $"{ Search.Root }/users";
+            public static readonly string SearchUsers = $"{ Root }/users";
+        }
+
+
+        /// <summary>
+        /// Contains request subroutes.
+        /// </summary>
+        public static class Request 
+        {
+            /// <summary>
+            /// Root Search module subroute.
+            /// </summary>
+            public static readonly string Root = "/request";
+
+            public static readonly string AddFriend = $"{ Root }/friend";
         }
     }
 }

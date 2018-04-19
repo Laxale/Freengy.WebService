@@ -5,9 +5,13 @@
 
 using System;
 using System.Linq;
+
 using Freengy.Common.Models;
 using Freengy.Database.Context;
+using Freengy.WebService.Context;
+using Freengy.WebService.Models;
 using NLog;
+
 
 namespace Freengy.WebService.Services 
 {
@@ -47,13 +51,13 @@ namespace Freengy.WebService.Services
         /// Add new or update already registered account in database.
         /// </summary>
         /// <param name="account">Account to add or update.</param>
-        public void AddOrUpdate(UserAccount account) 
+        public void AddOrUpdate(ComplexUserAccount account) 
         {
             lock (Locker)
             {
                 try
                 {
-                    using (var dbContext = new SimpleDbContext<UserAccount>())
+                    using (var dbContext = new ComplexUserContext())
                     {
                         var storedAcc = dbContext.Objects.FirstOrDefault(acc => acc.Id == account.Id);
                         if (storedAcc == null)
@@ -83,7 +87,7 @@ namespace Freengy.WebService.Services
         }
 
 
-        private void TransferProperties(UserAccount inDb, UserAccount incoming) 
+        private void TransferProperties(ComplexUserAccount inDb, ComplexUserAccount incoming) 
         {
             if(inDb.Id != incoming.Id) throw new InvalidOperationException("Unique id mismatch");
             if(inDb.UniqueId != incoming.UniqueId) throw new InvalidOperationException("Unique id mismatch");
@@ -92,6 +96,7 @@ namespace Freengy.WebService.Services
             inDb.Level = incoming.Level;
             inDb.Privilege = incoming.Privilege;
             inDb.LastLogInTime = incoming.LastLogInTime;
+            inDb.Friendships = incoming.Friendships;
         }
     }
 }

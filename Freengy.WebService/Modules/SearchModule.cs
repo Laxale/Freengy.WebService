@@ -4,12 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.WebService.Models;
 using Freengy.WebService.Services;
+
 using Nancy;
-using Newtonsoft.Json;
 
 
 namespace Freengy.WebService.Modules 
@@ -45,11 +47,27 @@ namespace Freengy.WebService.Modules
 
             if (searchRequest.Entity == SearchEntity.Users)
             {
-                IEnumerable<UserAccount> users = RegistrationService.Instance.FindByNameFilter(searchRequest.SearchFilter);
+                IEnumerable<ComplexUserAccount> users = RegistrationService.Instance.FindByNameFilter(searchRequest.SearchFilter);
 
                 var responce = helper.Serialize(users);
 
                 return responce;
+            }
+
+            if (searchRequest.Entity == SearchEntity.Friends)
+            {
+                ComplexUserAccount senderAcc = RegistrationService.Instance.FindById(searchRequest.SenderId);
+
+                if (senderAcc == null)
+                {
+                    return $"Account id {searchRequest.SenderId} not found";
+                }
+
+                var friends = senderAcc.Friendships.Select(friendship => friendship.Account);
+
+                var serialized = helper.Serialize(friends);
+
+                return serialized;
             }
 
             // only user search for the moment

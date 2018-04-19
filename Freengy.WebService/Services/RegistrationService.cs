@@ -11,7 +11,9 @@ using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Restrictions;
 using Freengy.Database.Context;
-
+using Freengy.WebService.Context;
+using Freengy.WebService.Extensions;
+using Freengy.WebService.Models;
 using NLog;
 
 
@@ -27,7 +29,7 @@ namespace Freengy.WebService.Services
 
         private static RegistrationService instance;
 
-        private readonly List<UserAccount> registeredAccounts = new List<UserAccount>();
+        private readonly List<ComplexUserAccount> registeredAccounts = new List<ComplexUserAccount>();
 
 
         private RegistrationService() 
@@ -51,9 +53,9 @@ namespace Freengy.WebService.Services
         }
 
 
-        public RegistrationStatus RegisterAccount(string userName, out UserAccount registeredAcc) 
+        public RegistrationStatus RegisterAccount(string userName, out ComplexUserAccount registeredAcc) 
         {
-            var newAccount = new UserAccount
+            var newAccount = new ComplexUserAccount
             {
                 Name = userName
             };
@@ -68,7 +70,7 @@ namespace Freengy.WebService.Services
         }
 
 
-        private RegistrationStatus RegisterAccount(UserAccount newAccount, out UserAccount registeredAcc) 
+        private RegistrationStatus RegisterAccount(ComplexUserAccount newAccount, out ComplexUserAccount registeredAcc) 
         {
             lock (Locker)
             {
@@ -84,14 +86,15 @@ namespace Freengy.WebService.Services
                     }
 
                     UserAccount trimmedAccount = new AccountValidator(newAccount).Trim();
+                    ComplexUserAccount trimmedComplexAcc = trimmedAccount.ToComplex();
 
-                    trimmedAccount.RegistrationTime = DateTime.Now;
+                    trimmedComplexAcc.RegistrationTime = DateTime.Now;
 
-                    AccountDbInteracter.Instance.AddOrUpdate(trimmedAccount);
+                    AccountDbInteracter.Instance.AddOrUpdate(trimmedComplexAcc);
 
-                    registeredAccounts.Add(trimmedAccount);
+                    registeredAccounts.Add(trimmedComplexAcc);
 
-                    registeredAcc = trimmedAccount;
+                    registeredAcc = trimmedComplexAcc;
 
                     return RegistrationStatus.Registered;
 
@@ -107,23 +110,23 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public UserAccount FindById(Guid userId) 
+        public ComplexUserAccount FindById(Guid userId) 
         {
             lock (Locker)
             {
-                UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == userId);
+                ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == userId);
 
                 return foundUser;
             }
         }
 
-        public UserAccount FindByName(string userName) 
+        public ComplexUserAccount FindByName(string userName) 
         {
             if (string.IsNullOrWhiteSpace(userName)) throw new ArgumentNullException(nameof(userName));
 
             lock (Locker)
             {
-                UserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
+                ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
 
                 foundUser?.SyncUniqueIdToId();
 
@@ -131,13 +134,13 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public IEnumerable<UserAccount> FindByNameFilter(string nameFilter) 
+        public IEnumerable<ComplexUserAccount> FindByNameFilter(string nameFilter) 
         {
-            if (string.IsNullOrWhiteSpace(nameFilter)) return new List<UserAccount>();
+            if (string.IsNullOrWhiteSpace(nameFilter)) return new List<ComplexUserAccount>();
 
             lock (Locker)
             {
-                Func<UserAccount, bool> selector;
+                Func<ComplexUserAccount, bool> selector;
                 if(string.IsNullOrWhiteSpace(nameFilter))
                 {
                     selector = acc =>
@@ -160,7 +163,7 @@ namespace Freengy.WebService.Services
                     };
                 }
 
-                IEnumerable<UserAccount> foundUsers = registeredAccounts.Where(selector);
+                IEnumerable<ComplexUserAccount> foundUsers = registeredAccounts.Where(selector);
                 
                 return foundUsers;
             }
@@ -169,9 +172,13 @@ namespace Freengy.WebService.Services
 
         private void ReadAccounts() 
         {
-            using (var dbContext = new SimpleDbContext<UserAccount>())
+            using (var dbContext = new ComplexUserContext())
             {
-                foreach (UserAccount account in dbContext.Objects)
+                var objects = dbContext.Objects;
+
+                if (!objects.Any()) return;
+
+                foreach (ComplexUserAccount account in objects)
                 {
                     registeredAccounts.Add(account);
                 }

@@ -85,7 +85,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ComplexUserConfiguration.cs" />
+    <Compile Include="Configuration\FriendshipConfiguration.cs" />
     <Compile Include="Constants\ServiceDbConst.cs" />
+    <Compile Include="Context\ComplexUserContext.cs" />
+    <Compile Include="Extensions\AccountExtensions.cs" />
+    <Compile Include="Models\ComplexUserAccount.cs" />
+    <Compile Include="Models\FriendshipModel.cs" />
+    <Compile Include="Modules\FriendRequestModule.cs" />
     <Compile Include="Modules\HelloModule.cs" />
     <Compile Include="Modules\RegisterUserModule.cs" />
     <Compile Include="Modules\SearchModule.cs" />
