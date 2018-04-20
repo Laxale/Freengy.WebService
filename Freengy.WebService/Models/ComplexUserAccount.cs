@@ -18,7 +18,7 @@ namespace Freengy.WebService.Models
     /// <summary>
     /// Service-wide user account model with non-client database relations.
     /// </summary>
-    internal class ComplexUserAccount : UserAccount 
+    internal class ComplexUserAccount : UserAccountModel 
     {
         /// <summary>
         /// Friendship relation models of this user account.

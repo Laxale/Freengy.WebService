@@ -10,7 +10,7 @@ namespace Freengy.WebService.Extensions
 {
     internal static class AccountExtensions 
     {
-        public static ComplexUserAccount ToComplex(this UserAccount simpleAccount)
+        public static ComplexUserAccount ToComplex(this UserAccountModel simpleAccount) 
         {
             var complex = CreateFrom(simpleAccount);
 
@@ -19,13 +19,13 @@ namespace Freengy.WebService.Extensions
 
         public static ComplexUserAccount Copy(this ComplexUserAccount otherAccount) 
         {
-            ComplexUserAccount complex = CreateFrom((UserAccount) otherAccount);
+            ComplexUserAccount complex = CreateFrom((UserAccountModel) otherAccount);
 
             return complex;
         }
 
 
-        private static ComplexUserAccount CreateFrom(UserAccount otherAccount) 
+        private static ComplexUserAccount CreateFrom(UserAccountModel otherAccount) 
         {
             var complex = new ComplexUserAccount
             {

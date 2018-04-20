@@ -13,7 +13,9 @@ using Freengy.Common.Restrictions;
 using Freengy.Database.Context;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
+using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
+
 using NLog;
 
 
@@ -22,7 +24,7 @@ namespace Freengy.WebService.Services
     /// <summary>
     /// Service to manage user account registrations.
     /// </summary>
-    internal class RegistrationService 
+    internal class RegistrationService : IService 
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private static readonly object Locker = new object();
@@ -53,6 +55,15 @@ namespace Freengy.WebService.Services
         }
 
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Initialize the service.
+        /// </summary>
+        public void Initialize()
+        {
+            
+        }
+
         public RegistrationStatus RegisterAccount(string userName, out ComplexUserAccount registeredAcc) 
         {
             var newAccount = new ComplexUserAccount
@@ -68,48 +79,7 @@ namespace Freengy.WebService.Services
 
             return result;
         }
-
-
-        private RegistrationStatus RegisterAccount(ComplexUserAccount newAccount, out ComplexUserAccount registeredAcc) 
-        {
-            lock (Locker)
-            {
-                registeredAcc = null;
-
-                try
-                {
-                    UserAccount existingAccount = FindByName(newAccount.Name);
-
-                    if (existingAccount != null)
-                    {
-                        return RegistrationStatus.AlreadyExists;
-                    }
-
-                    UserAccount trimmedAccount = new AccountValidator(newAccount).Trim();
-                    ComplexUserAccount trimmedComplexAcc = trimmedAccount.ToComplex();
-
-                    trimmedComplexAcc.RegistrationTime = DateTime.Now;
-
-                    AccountDbInteracter.Instance.AddOrUpdate(trimmedComplexAcc);
-
-                    registeredAccounts.Add(trimmedComplexAcc);
-
-                    registeredAcc = trimmedComplexAcc;
-
-                    return RegistrationStatus.Registered;
-
-                }
-                catch (Exception ex)
-                {
-                    string message = $"Failed to register account '{newAccount.Name}': {ex.Message}";
-                    logger.Error(ex, "Failed to register account");
-                    Console.WriteLine(message);
-
-                    return RegistrationStatus.Error;
-                }
-            }
-        }
-
+        
         public ComplexUserAccount FindById(Guid userId) 
         {
             lock (Locker)
@@ -181,6 +151,46 @@ namespace Freengy.WebService.Services
                 foreach (ComplexUserAccount account in objects)
                 {
                     registeredAccounts.Add(account);
+                }
+            }
+        }
+
+        private RegistrationStatus RegisterAccount(ComplexUserAccount newAccount, out ComplexUserAccount registeredAcc) 
+        {
+            lock (Locker)
+            {
+                registeredAcc = null;
+
+                try
+                {
+                    UserAccountModel existingAccount = FindByName(newAccount.Name);
+
+                    if (existingAccount != null)
+                    {
+                        return RegistrationStatus.AlreadyExists;
+                    }
+
+                    UserAccountModel trimmedAccount = new AccountValidator(newAccount).Trim();
+                    ComplexUserAccount trimmedComplexAcc = trimmedAccount.ToComplex();
+
+                    trimmedComplexAcc.RegistrationTime = DateTime.Now;
+
+                    AccountDbInteracter.Instance.AddOrUpdate(trimmedComplexAcc);
+
+                    registeredAccounts.Add(trimmedComplexAcc);
+
+                    registeredAcc = trimmedComplexAcc;
+
+                    return RegistrationStatus.Registered;
+
+                }
+                catch (Exception ex)
+                {
+                    string message = $"Failed to register account '{newAccount.Name}': {ex.Message}";
+                    logger.Error(ex, "Failed to register account");
+                    Console.WriteLine(message);
+
+                    return RegistrationStatus.Error;
                 }
             }
         }

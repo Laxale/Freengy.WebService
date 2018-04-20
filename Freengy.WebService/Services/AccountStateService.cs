@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
+using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
 
 
 namespace Freengy.WebService.Services 
 {
-    internal class AccountStateService 
+    internal class AccountStateService : IService 
     {
         private static readonly object Locker = new object();
 
@@ -45,7 +46,27 @@ namespace Freengy.WebService.Services
         }
 
 
-        public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState) 
+        /// <inheritdoc />
+        /// <summary>
+        /// Initialize the service.
+        /// </summary>
+        public void Initialize() 
+        {
+            
+        }
+
+        public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState)
+        {
+            return LogInOrOut(userName, true, out loggedAccountState);
+        }
+
+        public AccountOnlineStatus LogOut(string userName, out AccountState loggedAccountState) 
+        {
+            return LogInOrOut(userName, false, out loggedAccountState);
+        }
+
+
+        private AccountOnlineStatus LogInOrOut(string userName, bool isLoggingIn, out AccountState loggedAccountState) 
         {
             ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
 
@@ -55,47 +76,65 @@ namespace Freengy.WebService.Services
                 return AccountOnlineStatus.DoesntExist;
             }
 
-            AccountOnlineStatus result = LogIn(account, out AccountState state);
+            AccountOnlineStatus result = InvokeLogProcess(account, isLoggingIn, out AccountState state);
             loggedAccountState = state;
 
             return result;
         }
 
 
-        private AccountOnlineStatus LogIn(UserAccount account, out AccountState loggedAccountState) 
+        private AccountOnlineStatus InvokeLogProcess(UserAccountModel accountModel, bool isIn, out AccountState loggedAccountState) 
         {
-            if (account.UniqueId == Guid.Empty)
+            if (accountModel.UniqueId == Guid.Empty)
             {
                 throw new InvalidOperationException("Account Id is empty");
             }
 
             lock (Locker)
             {
-                AccountState accountState = accountStates.FirstOrDefault(state => state.Account.Id == account.Id);
+                return InvokeImpl(accountModel, isIn, out loggedAccountState);
+            }
+        }
 
-                if (accountState == null)
+        private AccountOnlineStatus InvokeImpl(UserAccountModel accountModel, bool isIn, out AccountState loggedAccountState) 
+        {
+            AccountState accountState = accountStates.FirstOrDefault(state => state.Account.Id == accountModel.Id);
+
+            if (accountState == null)
+            {
+                if (isIn)
                 {
-                    account.LastLogInTime = DateTime.Now;
-
-                    var newState = new AccountState
-                    {
-                        Account = account,
-                        OnlineStatus = AccountOnlineStatus.Online
-                    };
-
-                    accountStates.Add(newState);
-                    loggedAccountState = newState;
-
-                    return AccountOnlineStatus.Online;
+                    accountModel.LastLogInTime = DateTime.Now;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Tried to log out '{accountModel.Name}', who is not present");
                 }
 
-                accountState.Account.LastLogInTime = DateTime.Now;
-                loggedAccountState = accountState;
+                var newState = new AccountState { Account = accountModel, OnlineStatus = AccountOnlineStatus.Online };
 
-                AccountDbInteracter.Instance.AddOrUpdate((ComplexUserAccount)accountState.Account);
+                accountStates.Add(newState);
+                loggedAccountState = newState;
 
-                return accountState.OnlineStatus;
+                return AccountOnlineStatus.Online;
             }
+
+            if (isIn)
+            {
+                accountState.Account.LastLogInTime = DateTime.Now;
+                accountState.OnlineStatus = AccountOnlineStatus.Online;
+            }
+            else
+            {
+                //TODO: disconnect user from all activities
+                accountState.OnlineStatus = AccountOnlineStatus.Offline;
+            }
+
+            loggedAccountState = accountState;
+
+            AccountDbInteracter.Instance.AddOrUpdate((ComplexUserAccount) accountState.Account);
+
+            return accountState.OnlineStatus;
         }
     }
 }

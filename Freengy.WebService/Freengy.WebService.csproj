@@ -93,6 +93,7 @@
     <Compile Include="Context\ComplexUserContext.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
+    <Compile Include="Interfaces\IService.cs" />
     <Compile Include="Models\ComplexFriendRequest.cs" />
     <Compile Include="Models\ComplexUserAccount.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Services\AccountStateService.cs" />
     <Compile Include="Services\FriendRequestService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
+    <Compile Include="Services\ServicesInitializer.cs" />
     <Compile Include="Subroutes.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,9 +3,11 @@
 //
 
 using System;
+
 using Freengy.Common.Constants;
 using Freengy.Database;
 using Freengy.WebService.Constants;
+using Freengy.WebService.Services;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Hosting.Self;
@@ -31,6 +33,7 @@ namespace Freengy.WebService
                 Console.WriteLine("Starting Freengy server");
 
                 InitDatabase();
+                InitServices();
                 StartServer();
 
                 Console.WriteLine("Finished Freengy server");
@@ -52,6 +55,20 @@ namespace Freengy.WebService
             string appDataFolderPath = Initializer.GetFolderPathInAppData(FreengyPaths.AppDataRootFolderName);
             Initializer.SetStorageDirectoryPath(appDataFolderPath);
             Initializer.SetDbFileName(ServiceDbConst.DbFileName);
+
+            Console.WriteLine("Initialized database");
+        }
+
+        private static void InitServices() 
+        {
+            new ServicesInitializer()
+                .Register(AccountDbInteracter.Instance)
+                .Register(AccountStateService.Instance)
+                .Register(FriendRequestService.Instance)
+                .Register(RegistrationService.Instance)
+                .InitRegistered();
+
+            Console.WriteLine("Initialized services");
         }
 
         private static void StartServer() 

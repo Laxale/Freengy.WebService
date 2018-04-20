@@ -3,7 +3,7 @@
 //
 
 using System;
-
+using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Helpers;
 
@@ -48,7 +48,9 @@ namespace Freengy.WebService.Modules
                 return serialized;
             }
 
-            return "fuk";
+            friendRequest.RequestState = FriendRequestState.DoesntExist;
+
+            return friendRequest;
         }
     }
 }

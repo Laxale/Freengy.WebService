@@ -2,22 +2,25 @@
 //
 //
 
+using System;
+using System.Linq;
+
+using Freengy.Common.Enums;
+using Freengy.Database.Context;
+using Freengy.WebService.Context;
+using Freengy.WebService.Models;
 using Freengy.Common.Models;
+using Freengy.WebService.Interfaces;
+
+using NLog;
 
 
 namespace Freengy.WebService.Services 
 {
-    using System.Linq;
-
-    using Freengy.Common.Enums;
-    using Freengy.Database.Context;
-    using Freengy.WebService.Context;
-    using Freengy.WebService.Models;
-
-
-    internal class FriendRequestService 
+    internal class FriendRequestService : IService 
     {
         private static readonly object Locker = new object();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private static FriendRequestService instance;
         
@@ -42,6 +45,28 @@ namespace Freengy.WebService.Services
             }
         }
 
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Initialize the service.
+        /// </summary>
+        public void Initialize() 
+        {
+            try
+            {
+                using (var dbContext = new ComplexFriendRequestContext())
+                {
+                    var friendRequest = dbContext.Objects.FirstOrDefault();
+
+                    var test = friendRequest?.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                logger.Error(ex, $"Failed to initialize { nameof(FriendRequestService) } service");
+            }
+        }
 
         public ComplexFriendRequest Save(FriendRequest request) 
         {

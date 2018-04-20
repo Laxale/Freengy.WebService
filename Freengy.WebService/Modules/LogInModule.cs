@@ -37,7 +37,12 @@ namespace Freengy.WebService.Modules
 
             Console.WriteLine($"Got '{ logInRequest.Account.Name }' log in request");
 
-            AccountOnlineStatus result = accountService.LogIn(logInRequest.Account.Name, out AccountState accountState);
+            AccountState accountState;
+
+            AccountOnlineStatus result = 
+                logInRequest.IsLoggingIn ? 
+                    accountService.LogIn(logInRequest.Account.Name, out accountState) : 
+                    accountService.LogOut(logInRequest.Account.Name, out accountState);
 
             Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { result }");
 

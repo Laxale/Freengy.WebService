@@ -9,7 +9,9 @@ using System.Linq;
 using Freengy.Common.Models;
 using Freengy.Database.Context;
 using Freengy.WebService.Context;
+using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
+
 using NLog;
 
 
@@ -18,7 +20,7 @@ namespace Freengy.WebService.Services
     /// <summary>
     /// Interacts user accounts data with database.
     /// </summary>
-    internal class AccountDbInteracter 
+    internal class AccountDbInteracter : IService 
     {
         private static readonly object Locker = new object();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -46,6 +48,28 @@ namespace Freengy.WebService.Services
             }
         }
 
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Initialize the service.
+        /// </summary>
+        public void Initialize() 
+        {
+            try
+            {
+                using (var dbContext = new ComplexUserContext())
+                {
+                    ComplexUserAccount storedAcc = dbContext.Objects.FirstOrDefault();
+
+                    var test = storedAcc?.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                logger.Error(ex, $"Failed to initialize { nameof(AccountDbInteracter) } service");
+            }
+        }
 
         /// <summary>
         /// Add new or update already registered account in database.
