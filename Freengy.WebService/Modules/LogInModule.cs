@@ -35,7 +35,9 @@ namespace Freengy.WebService.Modules
 
             LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
 
-            Console.WriteLine($"Got '{ logInRequest.Account.Name }' log in request");
+            string direction = logInRequest.IsLoggingIn ? "in" : "out";
+
+            Console.WriteLine($"Got '{ logInRequest.Account.Name }' log { direction } request");
 
             AccountState accountState;
 
@@ -47,6 +49,8 @@ namespace Freengy.WebService.Modules
             Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { result }");
 
             string responce = JsonConvert.SerializeObject(accountState, Formatting.Indented);
+
+            Console.WriteLine($"Logged '{ logInRequest.Account.Name }' { direction }");
 
             return responce;
         }
