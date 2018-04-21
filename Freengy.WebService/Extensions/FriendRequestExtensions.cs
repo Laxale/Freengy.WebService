@@ -16,7 +16,7 @@ namespace Freengy.WebService.Extensions
             {
                 CreationDate = complexRequest.CreationDate,
                 Id = complexRequest.Id,
-                RequesterAccount = complexRequest.RequesterAccount,
+                RequesterAccount = complexRequest.NavigationParent,
                 TargetAccount = complexRequest.TargetAccount,
                 RequestState = complexRequest.RequestState
             };

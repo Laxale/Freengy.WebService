@@ -21,9 +21,11 @@ namespace Freengy.WebService.Modules
     /// </summary>
     public class FriendRequestModule : NancyModule 
     {
-        public FriendRequestModule() 
+        public FriendRequestModule()
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Created { nameof(FriendRequestModule) }");
+            Console.ForegroundColor = ConsoleColor.White;
 
             Post[Subroutes.Request.AddFriend] = OnAddFriendRequest;
         }
@@ -31,8 +33,9 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnAddFriendRequest(dynamic arg) 
         {
-            Console.WriteLine($"Got new friend request");
             var friendRequest = new SerializeHelper().DeserializeObject<FriendRequest>(Request.Body);
+
+            Console.WriteLine($"Got a friend request from { friendRequest.RequesterAccount.Name } to { friendRequest.TargetAccount.Name }");
 
             RegistrationService registrationService = RegistrationService.Instance;
             FriendRequestService friendRequestService = FriendRequestService.Instance;
@@ -43,10 +46,14 @@ namespace Freengy.WebService.Modules
 
                 friendRequest.RequestState = result.RequestState;
 
-                string serialized = new SerializeHelper().Serialize(result);
+                Console.WriteLine($"Saved request with result '{ friendRequest.RequestState }'");
+
+                string serialized = new SerializeHelper().Serialize(friendRequest);
 
                 return serialized;
             }
+
+            Console.WriteLine($"Target acount { friendRequest.TargetAccount.Name } doesnt exist");
 
             friendRequest.RequestState = FriendRequestState.DoesntExist;
 

@@ -40,6 +40,7 @@ namespace Freengy.WebService.Context
 
             modelBuilder.Configurations.Add(new ComplexUserConfiguration());
             modelBuilder.Configurations.Add(new FriendshipConfiguration());
+            modelBuilder.Configurations.Add(new ComplexFriendRequestConfiguration());
 
             CreateTable(modelBuilder);
         }

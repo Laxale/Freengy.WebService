@@ -36,7 +36,7 @@ namespace Freengy.WebService.Services
 
         private RegistrationService() 
         {
-            ReadAccounts();
+            
         }
 
 
@@ -59,9 +59,9 @@ namespace Freengy.WebService.Services
         /// <summary>
         /// Initialize the service.
         /// </summary>
-        public void Initialize()
+        public void Initialize() 
         {
-            
+            ReadAccounts();
         }
 
         public RegistrationStatus RegisterAccount(string userName, out ComplexUserAccount registeredAcc) 
@@ -150,6 +150,7 @@ namespace Freengy.WebService.Services
 
                 foreach (ComplexUserAccount account in objects)
                 {
+                    account.SyncUniqueIdToId();
                     registeredAccounts.Add(account);
                 }
             }

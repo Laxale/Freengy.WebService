@@ -83,12 +83,13 @@ namespace Freengy.WebService.Services
                     var complexRequest = new ComplexFriendRequest
                     {
                         Id = request.Id,
-                        RequesterAccount = requester,
-                        TargetAccount = target,
+                        //RequesterAccount = requester,
+                        //TargetAccount = target,
                         ParentId = requester.Id,
-                        RequesterId = requester.UniqueId,
-                        TargetId = target.UniqueId,
-                        CreationDate = request.CreationDate
+                        //RequesterId = requester.UniqueId,
+                        TargetId = target.UniqueId.ToString(),
+                        CreationDate = request.CreationDate,
+                        RequestState = FriendRequestState.AwaitingUserAnswer
                     };
 
                     context.Objects.Add(complexRequest);

@@ -11,6 +11,9 @@ using Freengy.WebService.Models;
 
 namespace Freengy.WebService.Context 
 {
+    /// <summary>
+    /// ORM context for <see cref="ComplexFriendRequest"/>.
+    /// </summary>
     internal class ComplexFriendRequestContext : ComplexDbContext<ComplexFriendRequest> 
     {
         /// <inheritdoc />
