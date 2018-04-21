@@ -6,12 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Globalization;
 using System.Threading.Tasks;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
-using Freengy.WebService.Interfaces;
+using Freengy.Common.Helpers;
 using Freengy.WebService.Models;
+using Freengy.WebService.Interfaces;
 
 
 namespace Freengy.WebService.Services 
@@ -55,7 +57,19 @@ namespace Freengy.WebService.Services
             
         }
 
-        public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState)
+        public bool IsAuthorized(Guid requesterId, string requesterToken) 
+        {
+            AccountState requesterAccountState = accountStates.FirstOrDefault(state => state.Account.UniqueId == requesterId);
+
+            bool isAuthorized =
+                requesterAccountState != null && 
+                requesterAccountState.OnlineStatus != AccountOnlineStatus.Offline && 
+                requesterAccountState.SessionToken == requesterToken;
+
+            return isAuthorized;
+        }
+
+        public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState) 
         {
             return LogInOrOut(userName, true, out loggedAccountState);
         }
@@ -102,19 +116,12 @@ namespace Freengy.WebService.Services
 
             if (accountState == null)
             {
-                if (isIn)
-                {
-                    accountModel.LastLogInTime = DateTime.Now;
-                }
-                else
+                if (!isIn)
                 {
                     throw new InvalidOperationException($"Tried to log out '{accountModel.Name}', who is not present");
                 }
 
-                var newState = new AccountState { Account = accountModel, OnlineStatus = AccountOnlineStatus.Online };
-
-                accountStates.Add(newState);
-                loggedAccountState = newState;
+                loggedAccountState = CreateNewState(accountModel);
 
                 return AccountOnlineStatus.Online;
             }
@@ -135,6 +142,30 @@ namespace Freengy.WebService.Services
             AccountDbInteracter.Instance.AddOrUpdate((ComplexUserAccount) accountState.Account);
 
             return accountState.OnlineStatus;
+        }
+
+        private AccountState CreateNewState(UserAccountModel accountModel) 
+        {
+            accountModel.LastLogInTime = DateTime.Now;
+
+            var newState = new AccountState
+            {
+                Account = accountModel,
+                SessionToken = CreateSessionToken(),
+                OnlineStatus = AccountOnlineStatus.Online
+            };
+
+            accountStates.Add(newState);
+            return newState;
+        }
+
+        private string CreateSessionToken() 
+        {
+            string source = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
+
+            string token = new Hasher().GetHash(source);
+
+            return token;
         }
     }
 }

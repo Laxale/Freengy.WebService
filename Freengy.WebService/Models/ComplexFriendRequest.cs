@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Freengy.Common.Models;
@@ -18,19 +19,14 @@ namespace Freengy.WebService.Models
         /// <summary>
         /// The identifier of a request target user.
         /// </summary>
+        [Required]
         public string TargetId { get; set; }
 
-        [NotMapped]
-        public ComplexUserAccount TargetAccount { get; set; }
-
         /// <summary>
-        /// The identifier of a request sender user.
+        /// Navigation property for retrieving target user account of this request.
         /// </summary>
-        //[NotMapped]
-        //public Guid RequesterId { get; set; }
-
-        //[NotMapped]
-        //public ComplexUserAccount RequesterAccount { get; set; }
+        [ForeignKey(nameof(TargetId))]
+        public ComplexUserAccount TargetAccount { get; set; }
 
         /// <summary>
         /// Request creation timestamp.

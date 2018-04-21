@@ -91,6 +91,7 @@
     <Compile Include="Constants\ServiceDbConst.cs" />
     <Compile Include="Context\ComplexFriendRequestContext.cs" />
     <Compile Include="Context\ComplexUserContext.cs" />
+    <Compile Include="Exceptions\NotAuthorizedException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />

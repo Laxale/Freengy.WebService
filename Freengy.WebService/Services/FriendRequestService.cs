@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 using Freengy.Common.Enums;
 using Freengy.Database.Context;
@@ -17,6 +18,9 @@ using NLog;
 
 namespace Freengy.WebService.Services 
 {
+    using System.Data.Entity;
+
+
     internal class FriendRequestService : IService 
     {
         private static readonly object Locker = new object();
@@ -68,6 +72,11 @@ namespace Freengy.WebService.Services
             }
         }
 
+        /// <summary>
+        /// Save a friend request to database.
+        /// </summary>
+        /// <param name="request">Incoming friend request model.</param>
+        /// <returns>Saved complex request model.</returns>
         public ComplexFriendRequest Save(FriendRequest request) 
         {
             RegistrationService service = RegistrationService.Instance;
@@ -100,6 +109,59 @@ namespace Freengy.WebService.Services
                 }
 
                 return savedRequest;
+            }
+        }
+
+        /// <summary>
+        /// Search for incoming friend requests by request target user identifier.
+        /// </summary>
+        /// <param name="requesterId">Target user identifier.</param>
+        /// <returns>Incoming requests collection.</returns>
+        public IEnumerable<ComplexFriendRequest> GetIncomingRequests(Guid requesterId)
+        {
+            ValidateRequest(requesterId);
+
+            bool Selector(ComplexFriendRequest request) => request.TargetId == requesterId.ToString();
+
+            return SearchRequests(Selector);
+        }
+
+        /// <summary>
+        /// Search for outgoing friend requests by request sender user identifier.
+        /// </summary>
+        /// <param name="requesterId">Sender user identifier.</param>
+        /// <returns>Outgoing requests collection.</returns>
+        public IEnumerable<ComplexFriendRequest> GetOutgoingRequests(Guid requesterId) 
+        {
+            ValidateRequest(requesterId);
+
+            bool Selector(ComplexFriendRequest request) => request.ParentId == requesterId.ToString();
+
+            return SearchRequests(Selector);
+        }
+
+
+        private static void ValidateRequest(Guid requesterId) 
+        {
+            if (requesterId == Guid.Empty)
+            {
+                throw new InvalidOperationException("Requester id must not be empty guid");
+            }
+        }
+        
+        private static IEnumerable<ComplexFriendRequest> SearchRequests(Func<ComplexFriendRequest, bool> selector) 
+        {
+            using (var context = new ComplexFriendRequestContext())
+            {
+                var result = 
+                    context
+                        .Objects
+                        .Include(request => request.TargetAccount)
+                        .Include(request => request.NavigationParent)
+                        .Where(selector)
+                        .ToList();
+
+                return result;
             }
         }
     }
