@@ -15,14 +15,19 @@ namespace Freengy.WebService.Configuration
     /// </summary>
     internal class FriendshipConfiguration : EntityTypeConfiguration<FriendshipModel> 
     {
-        public FriendshipConfiguration()
+        public FriendshipConfiguration() 
         {
             ToTable($"{nameof(FriendshipModel)}s");
 
-            HasRequired(model => model.NavigationParent)
+            HasRequired(friendship => friendship.NavigationParent)
                 .WithMany(acc => acc.Friendships)
                 .HasForeignKey(friendship => friendship.ParentId)
                 .WillCascadeOnDelete(true);
+
+//            HasRequired(model => model.AcceptorAccount)
+//                .WithMany(acc => acc.Friendships)
+//                .HasForeignKey(friendship => friendship.AcceptorAccountId)
+//                .WillCascadeOnDelete(true);
         }
     }
 }

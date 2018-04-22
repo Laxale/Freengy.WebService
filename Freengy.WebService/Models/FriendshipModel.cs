@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -18,10 +19,33 @@ namespace Freengy.WebService.Models
     /// </summary>
     internal class FriendshipModel : ChildComplexDbObject<ComplexUserAccount> 
     {
+        public FriendshipModel()
+        {
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("created friendship");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        [Required]
+        public string AcceptorAccountId { get; set; }
+
         /// <summary>
-        /// Friend account of this user relation.
+        /// Navigation property to get the acceptor friend account of this friendship.
         /// </summary>
-        public ComplexUserAccount Account { get; set; }
+        [ForeignKey(nameof(AcceptorAccountId))]
+        public ComplexUserAccount AcceptorAccount
+        {
+            get => acceptorAccount;
+            set
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("ser value");
+                acceptorAccount = value;
+            }
+
+        }
+
+        private ComplexUserAccount acceptorAccount;
 
         /// <summary>
         /// Date of a friendship birthsday.

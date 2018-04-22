@@ -18,7 +18,7 @@ namespace Freengy.WebService.Models
     /// <summary>
     /// Service-wide user account model with non-client database relations.
     /// </summary>
-    internal class ComplexUserAccount : UserAccountModel 
+    internal class ComplexUserAccount : UserAccountModel
     {
         /// <summary>
         /// Friendship relation models of this user account.
@@ -44,6 +44,8 @@ namespace Freengy.WebService.Models
             if (dbProxy is ComplexUserAccount account)
             {
                 ComplexUserAccount fromProxy = account.Copy();
+                account.Friendships.ForEach(fromProxy.Friendships.Add);
+                account.FriendRequests.ForEach(fromProxy.FriendRequests.Add);
 
                 return fromProxy;
             }

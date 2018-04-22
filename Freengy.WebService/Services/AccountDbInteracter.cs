@@ -17,6 +17,9 @@ using NLog;
 
 namespace Freengy.WebService.Services 
 {
+    using System.Data.Entity;
+
+
     /// <summary>
     /// Interacts user accounts data with database.
     /// </summary>
@@ -83,7 +86,12 @@ namespace Freengy.WebService.Services
                 {
                     using (var dbContext = new ComplexUserContext())
                     {
-                        var storedAcc = dbContext.Objects.FirstOrDefault(acc => acc.Id == account.Id);
+                        var storedAcc = 
+                            dbContext
+                                .Objects
+                                .Include(acc => acc.Friendships)
+                                .Include(acc => acc.FriendRequests)
+                                .FirstOrDefault(acc => acc.Id == account.Id);
                         if (storedAcc == null)
                         {
                             dbContext.Objects.Add(account);
@@ -93,7 +101,9 @@ namespace Freengy.WebService.Services
                         {
                             storedAcc.SyncUniqueIdToId();
 
-                            TransferProperties(storedAcc, account);
+                            TransferProperties(account, storedAcc);
+                            //storedAcc.Friendships = null;
+                            //storedAcc.FriendRequests = null;
 
                             Console.WriteLine($"Updated account '{ account.Name }'");
                         }
@@ -111,16 +121,17 @@ namespace Freengy.WebService.Services
         }
 
 
-        private void TransferProperties(ComplexUserAccount inDb, ComplexUserAccount incoming) 
+        public static void TransferProperties(ComplexUserAccount from, ComplexUserAccount to) 
         {
-            if(inDb.Id != incoming.Id) throw new InvalidOperationException("Unique id mismatch");
-            if(inDb.UniqueId != incoming.UniqueId) throw new InvalidOperationException("Unique id mismatch");
+            if(to.Id != from.Id) throw new InvalidOperationException("Id mismatch");
+            if(to.UniqueId != from.UniqueId) throw new InvalidOperationException("Unique id mismatch");
 
-            inDb.Name = incoming.Name;
-            inDb.Level = incoming.Level;
-            inDb.Privilege = incoming.Privilege;
-            inDb.LastLogInTime = incoming.LastLogInTime;
-            inDb.Friendships = incoming.Friendships;
+            to.Name = from.Name;
+            to.Level = from.Level;
+            to.Privilege = from.Privilege;
+            to.LastLogInTime = from.LastLogInTime;
+            to.Friendships = from.Friendships;
+            to.FriendRequests= from.FriendRequests;
         }
     }
 }

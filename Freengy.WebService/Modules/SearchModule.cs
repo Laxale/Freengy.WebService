@@ -73,7 +73,7 @@ namespace Freengy.WebService.Modules
                     return $"Account id {searchRequest.SenderId} not found";
                 }
 
-                var friends = senderAcc.Friendships.Select(friendship => friendship.Account);
+                var friends = senderAcc.Friendships.Select(friendship => friendship.AcceptorAccount);
 
                 var serialized = helper.Serialize(friends);
 

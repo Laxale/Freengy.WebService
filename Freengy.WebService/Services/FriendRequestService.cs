@@ -113,6 +113,36 @@ namespace Freengy.WebService.Services
         }
 
         /// <summary>
+        /// Save friendrequest reply state.
+        /// </summary>
+        /// <param name="reply">User reply for a friend request.</param>
+        public ComplexFriendRequest ReplyToRequest(FriendRequestReply reply) 
+        {
+            ComplexFriendRequest updatedRequest = SaveReplyState(reply);
+
+            var interacter = AccountDbInteracter.Instance;
+            var registrationService = RegistrationService.Instance;
+            var requesterId = reply.Request.RequesterAccount.UniqueId;
+            var requesterAcc = registrationService.FindById(requesterId);
+            if (requesterAcc == null) throw new InvalidOperationException($"Requester account '{ requesterId }' not found");
+
+            var friendship = new FriendshipModel
+            {
+                ParentId = reply.Request.RequesterAccount.Id,
+                AcceptorAccountId = reply.Request.TargetAccount.Id,
+                Established = updatedRequest.DecisionDate,
+            };
+
+            requesterAcc.Friendships.Add(friendship);
+
+            interacter.AddOrUpdate(requesterAcc);
+
+            registrationService.UpdateCache(requesterAcc);
+
+            return updatedRequest;
+        }
+
+        /// <summary>
         /// Search for incoming friend requests by request target user identifier.
         /// </summary>
         /// <param name="requesterId">Target user identifier.</param>
@@ -121,7 +151,14 @@ namespace Freengy.WebService.Services
         {
             ValidateRequest(requesterId);
 
-            bool Selector(ComplexFriendRequest request) => request.TargetId == requesterId.ToString();
+            bool Selector(ComplexFriendRequest request)
+            {
+                bool select = 
+                    request.TargetId == requesterId.ToString() && 
+                    request.RequestState == FriendRequestState.AwaitingUserAnswer;
+
+                return select;
+            }
 
             return SearchRequests(Selector);
         }
@@ -148,7 +185,44 @@ namespace Freengy.WebService.Services
                 throw new InvalidOperationException("Requester id must not be empty guid");
             }
         }
-        
+
+        private static ComplexFriendRequest SaveReplyState(FriendRequestReply reply) 
+        {
+            using (var context = new ComplexFriendRequestContext())
+            {
+                var targetRequest = context.Objects.FirstOrDefault(request => request.Id == reply.Request.Id);
+
+                if (targetRequest == null)
+                {
+                    throw new InvalidOperationException($"Friend request for reply with id {reply.Request.Id} not found");
+                }
+
+                if (reply.Reaction == FriendRequestReaction.Accept)
+                {
+                    targetRequest.RequestState = FriendRequestState.Accepted;
+                }
+                else if (reply.Reaction == FriendRequestReaction.Decline)
+                {
+                    targetRequest.RequestState = FriendRequestState.Declined;
+                }
+                else if (reply.Reaction == FriendRequestReaction.Ban)
+                {
+                    //TODO wut?
+                }
+                else
+                {
+                    // not ready yet
+                    throw new NotImplementedException();
+                }
+
+                targetRequest.DecisionDate = DateTime.Now;
+
+                context.SaveChanges();
+
+                return targetRequest;
+            }
+        }
+
         private static IEnumerable<ComplexFriendRequest> SearchRequests(Func<ComplexFriendRequest, bool> selector) 
         {
             using (var context = new ComplexFriendRequestContext())

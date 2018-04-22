@@ -54,11 +54,24 @@ namespace Freengy.WebService
         public static class Request 
         {
             /// <summary>
-            /// Root Search module subroute.
+            /// Root Request module subroute.
             /// </summary>
             public static readonly string Root = "/request";
 
             public static readonly string AddFriend = $"{ Root }/friend";
+        }
+
+        /// <summary>
+        /// Contains reply subroutes.
+        /// </summary>
+        public static class Reply 
+        {
+            /// <summary>
+            /// Root Reply module subroute.
+            /// </summary>
+            public static readonly string Root = "/reply";
+
+            public static readonly string FriendRequest = $"{ Root }/friendrequest";
         }
     }
 }

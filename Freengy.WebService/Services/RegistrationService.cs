@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Data.Entity;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
@@ -62,6 +62,25 @@ namespace Freengy.WebService.Services
         public void Initialize() 
         {
             ReadAccounts();
+        }
+
+        public void UpdateCache(ComplexUserAccount account) 
+        {
+            lock (Locker)
+            {
+                try
+                {
+                    var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == account.UniqueId);
+
+                    if(targetAcc == null) throw new InvalidOperationException($"Account '{ account.UniqueId }' not found in cache");
+
+                    AccountDbInteracter.TransferProperties(account, targetAcc);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
         }
 
         public RegistrationStatus RegisterAccount(string userName, out ComplexUserAccount registeredAcc) 
@@ -144,13 +163,19 @@ namespace Freengy.WebService.Services
         {
             using (var dbContext = new ComplexUserContext())
             {
-                var objects = dbContext.Objects;
+                var objects = 
+                    dbContext
+                        .Objects
+                        .Include(acc => acc.Friendships)
+                        .Include(acc => acc.FriendRequests);
 
                 if (!objects.Any()) return;
 
                 foreach (ComplexUserAccount account in objects)
                 {
-                    account.SyncUniqueIdToId();
+                    var realAccount = (ComplexUserAccount)account.CreateFromProxy(account);
+
+                    realAccount.SyncUniqueIdToId();
                     registeredAccounts.Add(account);
                 }
             }
