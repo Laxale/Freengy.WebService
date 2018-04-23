@@ -7,24 +7,30 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Helpers;
+using Freengy.WebService.Context;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Models;
 using Freengy.WebService.Interfaces;
+
+using NLog;
 
 
 namespace Freengy.WebService.Services 
 {
     internal class AccountStateService : IService 
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private static readonly object Locker = new object();
 
         private static AccountStateService instance;
 
-        private readonly List<AccountState> accountStates = new List<AccountState>();
+        private readonly List<AccountStateModel> accountStates = new List<AccountStateModel>();
 
 
         private AccountStateService() 
@@ -54,13 +60,56 @@ namespace Freengy.WebService.Services
         /// </summary>
         public void Initialize() 
         {
-            
+            try
+            {
+                using (var context = new ComplexUserContext())
+                {
+                    List<ComplexUserAccount> allUsers = context.Objects.ToList();
+
+                    foreach (ComplexUserAccount account in allUsers)
+                    {
+                        var state = new AccountStateModel
+                        {
+                            Account = account,
+                            Address = string.Empty,
+                            SessionToken = string.Empty,
+                            OnlineStatus = AccountOnlineStatus.Offline
+                        };
+
+                        accountStates.Add(state);
+                    }
+                }
+
+                string message = $"Initialized {nameof(AccountStateService)}";
+                Console.WriteLine(message);
+                logger.Info(message);
+            }
+            catch (Exception ex)
+            {
+                string message = $"Failed to initialize {nameof(AccountStateService)}";
+                Console.WriteLine(ex);
+                logger.Error(ex, message);
+            }
+        }
+
+        /// <summary>
+        /// Get the state of a given account.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public AccountStateModel GetStatusOf(Guid userId) 
+        {
+            lock (Locker)
+            {
+                var stateModel = accountStates.FirstOrDefault(state => state.Account.Id == userId);
+
+                return stateModel;
+            }
         }
 
         public bool IsAuthorized(Guid requesterId, string requesterToken) 
         {
-            //AccountState requesterAccountState = accountStates.FirstOrDefault(state => state.Account.UniqueId == requesterId);
-            AccountState requesterAccountState = accountStates.FirstOrDefault(state => state.Account.Id == requesterId);
+            AccountStateModel requesterAccountState = accountStates.FirstOrDefault(state => state.Account.Id == requesterId);
 
             bool isAuthorized =
                 requesterAccountState != null && 
@@ -70,88 +119,81 @@ namespace Freengy.WebService.Services
             return isAuthorized;
         }
 
-        public AccountOnlineStatus LogIn(string userName, out AccountState loggedAccountState) 
-        {
-            return LogInOrOut(userName, true, out loggedAccountState);
-        }
-
-        public AccountOnlineStatus LogOut(string userName, out AccountState loggedAccountState) 
-        {
-            return LogInOrOut(userName, false, out loggedAccountState);
-        }
-
-
-        private AccountOnlineStatus LogInOrOut(string userName, bool isLoggingIn, out AccountState loggedAccountState) 
+        public AccountStateModel LogIn(string userName, string userAddress) 
         {
             ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
 
             if (account == null)
             {
-                loggedAccountState = null;
-                return AccountOnlineStatus.DoesntExist;
-            }
-
-            AccountOnlineStatus result = InvokeLogProcess(account, isLoggingIn, out AccountState state);
-            loggedAccountState = state;
-
-            return result;
-        }
-
-
-        private AccountOnlineStatus InvokeLogProcess(UserAccountModel accountModel, bool isIn, out AccountState loggedAccountState) 
-        {
-            //if (accountModel.UniqueId == Guid.Empty)
-            if (accountModel.Id == Guid.Empty)
-            {
-                throw new InvalidOperationException("Account Id is empty");
+                throw new InvalidOperationException($"Account '{ userName }' is not registered");
             }
 
             lock (Locker)
             {
-                return InvokeImpl(accountModel, isIn, out loggedAccountState);
+                return LogInImpl(account, userAddress);
             }
         }
 
-        private AccountOnlineStatus InvokeImpl(UserAccountModel accountModel, bool isIn, out AccountState loggedAccountState) 
+        public AccountStateModel LogOut(string userName) 
         {
-            AccountState accountState = accountStates.FirstOrDefault(state => state.Account.Id == accountModel.Id);
+            ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
 
-            if (accountState == null)
+            if (account == null)
             {
-                if (!isIn)
-                {
-                    throw new InvalidOperationException($"Tried to log out '{accountModel.Name}', who is not present");
-                }
-
-                loggedAccountState = CreateNewState(accountModel);
-
-                return AccountOnlineStatus.Online;
+                throw new InvalidOperationException($"Cannot log '{ userName }' out - not registered");
             }
 
-            if (isIn)
+            lock (Locker)
             {
-                accountState.Account.LastLogInTime = DateTime.Now;
-                accountState.OnlineStatus = AccountOnlineStatus.Online;
+                return LogOutImpl(account);
             }
-            else
-            {
-                //TODO: disconnect user from all activities
-                accountState.OnlineStatus = AccountOnlineStatus.Offline;
-            }
-
-            loggedAccountState = accountState;
-
-            AccountDbInteracter.Instance.AddOrUpdate((ComplexUserAccount) accountState.Account);
-
-            return accountState.OnlineStatus;
         }
 
-        private AccountState CreateNewState(UserAccountModel accountModel) 
+
+        private AccountStateModel LogInImpl(UserAccountModel accountModel, string userAddress) 
+        {
+            AccountStateModel savedAccountState = accountStates.FirstOrDefault(state => state.Account.Id == accountModel.Id);
+
+            if (savedAccountState == null)
+            {
+                var newModel = CreateNewState(accountModel, userAddress);
+                newModel.Account.LastLogInTime = DateTime.Now;
+                
+                return newModel;
+            }
+
+            savedAccountState.Address = userAddress;
+            savedAccountState.SessionToken = CreateSessionToken();
+            savedAccountState.Account.LastLogInTime = DateTime.Now;
+            savedAccountState.OnlineStatus = AccountOnlineStatus.Online;
+
+            return savedAccountState;
+        }
+
+        private AccountStateModel LogOutImpl(UserAccountModel accountModel) 
+        {
+            AccountStateModel savedAccountState = accountStates.FirstOrDefault(state => state.Account.Id == accountModel.Id);
+
+            if (savedAccountState == null)
+            {
+                throw new InvalidOperationException($"Cannot log '{ accountModel.Name }' out - account state not saved");
+            }
+
+            savedAccountState.Address = string.Empty;
+            savedAccountState.OnlineStatus = AccountOnlineStatus.Offline;
+
+            AccountDbInteracter.Instance.AddOrUpdate(savedAccountState.Account.ToComplex());
+
+            return savedAccountState;
+        }
+
+        private AccountStateModel CreateNewState(UserAccountModel accountModel, string address) 
         {
             accountModel.LastLogInTime = DateTime.Now;
 
-            var newState = new AccountState
+            var newState = new AccountStateModel
             {
+                Address = address,
                 Account = accountModel,
                 SessionToken = CreateSessionToken(),
                 OnlineStatus = AccountOnlineStatus.Online

@@ -19,14 +19,6 @@ namespace Freengy.WebService.Models
     /// </summary>
     internal class FriendshipModel : ChildComplexDbObject<ComplexUserAccount> 
     {
-        public FriendshipModel() 
-        {
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("created friendship");
-            Console.ForegroundColor = ConsoleColor.White;
-        }
-
-
         [Required]
         public Guid AcceptorAccountId { get; set; }
 

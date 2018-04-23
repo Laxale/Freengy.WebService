@@ -3,10 +3,15 @@
 //
 
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Freengy.Common.Constants;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.Common.Models.Readonly;
 using Freengy.WebService.Services;
 
 using Nancy;
@@ -31,7 +36,7 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnLoginRequest(dynamic arg) 
         {
-            var accountService = AccountStateService.Instance;
+            var stateService = AccountStateService.Instance;
 
             LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
 
@@ -39,20 +44,27 @@ namespace Freengy.WebService.Modules
 
             Console.WriteLine($"Got '{ logInRequest.Account.Name }' log { direction } request");
 
-            AccountState accountState;
+            string userAddress = GetUserAddress(Request);
 
-            AccountOnlineStatus result = 
+            AccountStateModel stateModel = 
                 logInRequest.IsLoggingIn ? 
-                    accountService.LogIn(logInRequest.Account.Name, out accountState) : 
-                    accountService.LogOut(logInRequest.Account.Name, out accountState);
+                    stateService.LogIn(logInRequest.Account.Name, userAddress) : 
+                    stateService.LogOut(logInRequest.Account.Name);
 
-            Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { result }");
+            Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { stateModel }");
 
-            string responce = JsonConvert.SerializeObject(accountState, Formatting.Indented);
+            string responce = JsonConvert.SerializeObject(stateModel, Formatting.Indented);
 
             Console.WriteLine($"Logged '{ logInRequest.Account.Name }' { direction }");
 
             return responce;
+        }
+
+        private string GetUserAddress(Request httpRequest) 
+        {
+            IEnumerable<string> headerValue = httpRequest.Headers[FreengyHeaders.ClientAddressHeaderName];
+
+            return headerValue.First();
         }
     }
 }

@@ -53,16 +53,7 @@ namespace Freengy.WebService.Modules
 
             if (searchRequest.Entity == SearchEntity.Users)
             {
-                IEnumerable<ComplexUserAccount> users = 
-                    RegistrationService
-                        .Instance
-                        .FindByNameFilter(searchRequest.SearchFilter)
-                        //.Where(acc => acc.UniqueId != searchRequest.SenderId);
-                        .Where(acc => acc.Id != searchRequest.SenderId);
-
-                var responce = helper.Serialize(users);
-
-                return responce;
+                return ProcessSearchUsers(searchRequest, helper);
             }
 
             if (searchRequest.Entity == SearchEntity.Friends)
@@ -74,22 +65,44 @@ namespace Freengy.WebService.Modules
             throw new NotImplementedException();
         }
 
+        private dynamic ProcessSearchUsers(SearchRequest searchRequest, SerializeHelper helper) 
+        {
+            IEnumerable<ComplexUserAccount> users =
+                RegistrationService
+                    .Instance
+                    .FindByNameFilter(searchRequest.SearchFilter)
+                    //.Where(acc => acc.UniqueId != searchRequest.SenderId);
+                    .Where(acc => acc.Id != searchRequest.SenderId);
 
-        private static dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper) 
+            var responce = helper.Serialize(users);
+
+            return responce;
+        }
+
+        private dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper) 
         {
             ComplexUserAccount senderAcc = RegistrationService.Instance.FindById(searchRequest.SenderId);
 
             if (senderAcc == null)
             {
-                return $"Account id {searchRequest.SenderId} not found";
+                return $"Account id {searchRequest.SenderId} is not registered";
             }
 
-            UserAccountModel AccountSelector(FriendshipModel friendship)
+            var stateService = AccountStateService.Instance;
+
+            AccountStateModel AccountStateSelector(FriendshipModel friendship)
             {
-                return friendship.AcceptorAccountId == searchRequest.SenderId ? friendship.NavigationParent : friendship.AcceptorAccount;
+                ComplexUserAccount account = 
+                    friendship.AcceptorAccountId == searchRequest.SenderId ? 
+                        friendship.NavigationParent : 
+                        friendship.AcceptorAccount;
+
+                AccountStateModel accountState = stateService.GetStatusOf(account.Id);
+
+                return accountState;
             }
 
-            var friends = senderAcc.Friendships.Select(AccountSelector);
+            var friends = senderAcc.Friendships.Select(AccountStateSelector);
 
             var serialized = helper.Serialize(friends);
 

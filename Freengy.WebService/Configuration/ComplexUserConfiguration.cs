@@ -4,10 +4,9 @@
 
 using System.Collections.Generic;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
-using System.Text;
 
 using Freengy.Common.Models;
+using Freengy.Common.Models.Readonly;
 using Freengy.WebService.Models;
 
 
