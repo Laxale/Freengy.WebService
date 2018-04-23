@@ -19,33 +19,22 @@ namespace Freengy.WebService.Models
     /// </summary>
     internal class FriendshipModel : ChildComplexDbObject<ComplexUserAccount> 
     {
-        public FriendshipModel()
+        public FriendshipModel() 
         {
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("created friendship");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+
         [Required]
-        public string AcceptorAccountId { get; set; }
+        public Guid AcceptorAccountId { get; set; }
 
         /// <summary>
         /// Navigation property to get the acceptor friend account of this friendship.
         /// </summary>
         [ForeignKey(nameof(AcceptorAccountId))]
-        public ComplexUserAccount AcceptorAccount
-        {
-            get => acceptorAccount;
-            set
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("ser value");
-                acceptorAccount = value;
-            }
-
-        }
-
-        private ComplexUserAccount acceptorAccount;
+        public ComplexUserAccount AcceptorAccount { get; set; }
 
         /// <summary>
         /// Date of a friendship birthsday.
@@ -55,17 +44,17 @@ namespace Freengy.WebService.Models
         
         public override DbObject CreateFromProxy(DbObject dbProxy) 
         {
-            if (!(dbProxy is FriendshipModel model))
-            {
-                throw new InvalidOperationException("FFFUUUU");
-            }
-
-            return null;
+            throw new InvalidOperationException("FFFUUUU");
         }
 
+        /// <summary>
+        /// Need to clear navigation properties before storing to database.
+        /// </summary>
+        /// <returns>This instance prepared for storing to databse.</returns>
         public override ComplexDbObject PrepareMappedProps() 
         {
-            //Friends.Clear();
+            AcceptorAccount = null;
+            NavigationParent = null;
 
             return this;
         }

@@ -57,7 +57,8 @@ namespace Freengy.WebService.Modules
                     RegistrationService
                         .Instance
                         .FindByNameFilter(searchRequest.SearchFilter)
-                        .Where(acc => acc.UniqueId != searchRequest.SenderId);
+                        //.Where(acc => acc.UniqueId != searchRequest.SenderId);
+                        .Where(acc => acc.Id != searchRequest.SenderId);
 
                 var responce = helper.Serialize(users);
 
@@ -66,22 +67,33 @@ namespace Freengy.WebService.Modules
 
             if (searchRequest.Entity == SearchEntity.Friends)
             {
-                ComplexUserAccount senderAcc = RegistrationService.Instance.FindById(searchRequest.SenderId);
-
-                if (senderAcc == null)
-                {
-                    return $"Account id {searchRequest.SenderId} not found";
-                }
-
-                var friends = senderAcc.Friendships.Select(friendship => friendship.AcceptorAccount);
-
-                var serialized = helper.Serialize(friends);
-
-                return serialized;
+                return ProcessSearchFriends(searchRequest, helper);
             }
 
             // only user search for the moment
             throw new NotImplementedException();
+        }
+
+
+        private static dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper) 
+        {
+            ComplexUserAccount senderAcc = RegistrationService.Instance.FindById(searchRequest.SenderId);
+
+            if (senderAcc == null)
+            {
+                return $"Account id {searchRequest.SenderId} not found";
+            }
+
+            UserAccountModel AccountSelector(FriendshipModel friendship)
+            {
+                return friendship.AcceptorAccountId == searchRequest.SenderId ? friendship.NavigationParent : friendship.AcceptorAccount;
+            }
+
+            var friends = senderAcc.Friendships.Select(AccountSelector);
+
+            var serialized = helper.Serialize(friends);
+
+            return serialized;
         }
     }
 }

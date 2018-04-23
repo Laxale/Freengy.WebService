@@ -65,6 +65,7 @@ namespace Freengy.WebService
                 .Register(AccountDbInteracter.Instance)
                 .Register(AccountStateService.Instance)
                 .Register(FriendRequestService.Instance)
+                .Register(FriendshipService.Instance)
                 .Register(RegistrationService.Instance)
                 .InitRegistered();
 

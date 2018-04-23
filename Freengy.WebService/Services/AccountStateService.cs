@@ -59,7 +59,8 @@ namespace Freengy.WebService.Services
 
         public bool IsAuthorized(Guid requesterId, string requesterToken) 
         {
-            AccountState requesterAccountState = accountStates.FirstOrDefault(state => state.Account.UniqueId == requesterId);
+            //AccountState requesterAccountState = accountStates.FirstOrDefault(state => state.Account.UniqueId == requesterId);
+            AccountState requesterAccountState = accountStates.FirstOrDefault(state => state.Account.Id == requesterId);
 
             bool isAuthorized =
                 requesterAccountState != null && 
@@ -99,7 +100,8 @@ namespace Freengy.WebService.Services
 
         private AccountOnlineStatus InvokeLogProcess(UserAccountModel accountModel, bool isIn, out AccountState loggedAccountState) 
         {
-            if (accountModel.UniqueId == Guid.Empty)
+            //if (accountModel.UniqueId == Guid.Empty)
+            if (accountModel.Id == Guid.Empty)
             {
                 throw new InvalidOperationException("Account Id is empty");
             }

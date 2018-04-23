@@ -20,7 +20,7 @@ namespace Freengy.WebService.Models
         /// The identifier of a request target user.
         /// </summary>
         [Required]
-        public string TargetId { get; set; }
+        public Guid TargetId { get; set; }
 
         /// <summary>
         /// Navigation property for retrieving target user account of this request.
@@ -45,7 +45,7 @@ namespace Freengy.WebService.Models
 
 
         /// <inheritdoc />
-        public override DbObject CreateFromProxy(DbObject dbProxy)
+        public override DbObject CreateFromProxy(DbObject dbProxy) 
         {
             return (ComplexFriendRequest)dbProxy;
         }
@@ -53,6 +53,9 @@ namespace Freengy.WebService.Models
         /// <inheritdoc />
         public override ComplexDbObject PrepareMappedProps() 
         {
+            TargetAccount = null;
+            NavigationParent = null;
+
             return this;
         }
 

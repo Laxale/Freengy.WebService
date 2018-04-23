@@ -70,9 +70,10 @@ namespace Freengy.WebService.Services
             {
                 try
                 {
-                    var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == account.UniqueId);
+                    //var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == account.UniqueId);
+                    var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.Id == account.Id);
 
-                    if(targetAcc == null) throw new InvalidOperationException($"Account '{ account.UniqueId }' not found in cache");
+                    if(targetAcc == null) throw new InvalidOperationException($"Account '{ account.Id }' not found in cache");
 
                     AccountDbInteracter.TransferProperties(account, targetAcc);
                 }
@@ -90,7 +91,8 @@ namespace Freengy.WebService.Services
                 Name = userName
             };
 
-            newAccount.UniqueId = Guid.Parse(newAccount.Id);
+            //newAccount.UniqueId = Guid.Parse(newAccount.Id);
+            newAccount.Id = newAccount.Id;
 
             RegistrationStatus result = RegisterAccount(newAccount, out newAccount);
 
@@ -103,7 +105,8 @@ namespace Freengy.WebService.Services
         {
             lock (Locker)
             {
-                ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == userId);
+                //ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == userId);
+                ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Id == userId);
 
                 return foundUser;
             }
@@ -116,8 +119,6 @@ namespace Freengy.WebService.Services
             lock (Locker)
             {
                 ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
-
-                foundUser?.SyncUniqueIdToId();
 
                 return foundUser;
             }
@@ -132,11 +133,7 @@ namespace Freengy.WebService.Services
                 Func<ComplexUserAccount, bool> selector;
                 if(string.IsNullOrWhiteSpace(nameFilter))
                 {
-                    selector = acc =>
-                    {
-                        acc.SyncUniqueIdToId();
-                        return true;
-                    };
+                    selector = acc => true;
                 }
                 else
                 {
@@ -144,7 +141,6 @@ namespace Freengy.WebService.Services
                     {
                         if (acc.Name.Contains(nameFilter))
                         {
-                            acc.SyncUniqueIdToId();
                             return true;
                         }
 
@@ -175,8 +171,12 @@ namespace Freengy.WebService.Services
                 {
                     var realAccount = (ComplexUserAccount)account.CreateFromProxy(account);
 
-                    realAccount.SyncUniqueIdToId();
-                    registeredAccounts.Add(account);
+                    // автоматически из контекста цепляются только дружбы по основному внешнему ключу - исходящие.
+                    // руками нужно добавить дружбы, которые для данного аккаунта являются входящими
+                    var incomingFriendships = FriendshipService.Instance.FindByAcceptor(realAccount.Id);
+                    realAccount.Friendships.AddRange(incomingFriendships);
+
+                    registeredAccounts.Add(realAccount);
                 }
             }
         }

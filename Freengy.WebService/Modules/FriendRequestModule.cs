@@ -31,7 +31,7 @@ namespace Freengy.WebService.Modules
             Console.ForegroundColor = ConsoleColor.White;
 
             Post[Subroutes.Request.AddFriend] = OnAddFriendRequest;
-            Post[Subroutes.Search.SearchFriendRequests] = OnSearchFriendRequest;
+            Post[Subroutes.Search.SearchFriendRequests] = OnSearchFriendRequestRequest;
             Post[Subroutes.Reply.FriendRequest] = OnFriendRequestReply;
         }
 
@@ -67,11 +67,13 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnFriendRequestReply(dynamic arg) 
         {
-            var requestReply = new SerializeHelper().DeserializeObject<FriendRequestReply>(Request.Body);
+            var helper = new SerializeHelper();
+            var requestReply = helper.DeserializeObject<FriendRequestReply>(Request.Body);
 
             Console.WriteLine($"Got a friend request reply from { requestReply.Request.TargetAccount.Name } to { requestReply.Request.RequesterAccount.Name }");
 
-            var senderId = Guid.Parse(requestReply.Id);
+            //var senderId = Guid.Parse(requestReply.Id);
+            var senderId = requestReply.Id;
             if (!AccountStateService.Instance.IsAuthorized(senderId, requestReply.UserToken))
             {
                 throw new NotAuthorizedException(senderId);
@@ -81,11 +83,12 @@ namespace Freengy.WebService.Modules
 
             ComplexFriendRequest processedRequest = friendRequestService.ReplyToRequest(requestReply);
             requestReply.EstablishedDate = processedRequest.DecisionDate;
+            var serialized = helper.Serialize(requestReply);
 
-            return requestReply;
+            return serialized;
         }
 
-        private dynamic OnSearchFriendRequest(dynamic arg) 
+        private dynamic OnSearchFriendRequestRequest(dynamic arg) 
         {
             var searchRequest = new SerializeHelper().DeserializeObject<SearchRequest>(Request.Body);
             SearchEntity searchEntity = searchRequest.Entity;

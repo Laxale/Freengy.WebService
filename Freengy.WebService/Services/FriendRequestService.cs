@@ -11,6 +11,7 @@ using Freengy.Database.Context;
 using Freengy.WebService.Context;
 using Freengy.WebService.Models;
 using Freengy.Common.Models;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Interfaces;
 
 using NLog;
@@ -80,8 +81,10 @@ namespace Freengy.WebService.Services
         public ComplexFriendRequest Save(FriendRequest request) 
         {
             RegistrationService service = RegistrationService.Instance;
-            ComplexUserAccount requester = service.FindById(request.RequesterAccount.UniqueId);
-            ComplexUserAccount target = service.FindById(request.TargetAccount.UniqueId);
+            //ComplexUserAccount requester = service.FindById(request.RequesterAccount.UniqueId);
+            ComplexUserAccount requester = service.FindById(request.RequesterAccount.Id);
+            //ComplexUserAccount target = service.FindById(request.TargetAccount.UniqueId);
+            ComplexUserAccount target = service.FindById(request.TargetAccount.Id);
 
             using (var context = new ComplexFriendRequestContext())
             {
@@ -92,11 +95,8 @@ namespace Freengy.WebService.Services
                     var complexRequest = new ComplexFriendRequest
                     {
                         Id = request.Id,
-                        //RequesterAccount = requester,
-                        //TargetAccount = target,
                         ParentId = requester.Id,
-                        //RequesterId = requester.UniqueId,
-                        TargetId = target.UniqueId.ToString(),
+                        TargetId = target.Id,
                         CreationDate = request.CreationDate,
                         RequestState = FriendRequestState.AwaitingUserAnswer
                     };
@@ -122,22 +122,31 @@ namespace Freengy.WebService.Services
 
             var interacter = AccountDbInteracter.Instance;
             var registrationService = RegistrationService.Instance;
-            var requesterId = reply.Request.RequesterAccount.UniqueId;
+            //var requesterId = reply.Request.RequesterAccount.UniqueId;
+            var targetId = reply.Request.TargetAccount.Id;
+            var requesterId = reply.Request.RequesterAccount.Id;
+
+            var targetAcc = registrationService.FindById(targetId);
             var requesterAcc = registrationService.FindById(requesterId);
+            if (targetAcc == null) throw new InvalidOperationException($"Target account '{ targetId }' not found");
             if (requesterAcc == null) throw new InvalidOperationException($"Requester account '{ requesterId }' not found");
 
             var friendship = new FriendshipModel
             {
                 ParentId = reply.Request.RequesterAccount.Id,
+                NavigationParent = reply.Request.RequesterAccount.ToComplex(),
                 AcceptorAccountId = reply.Request.TargetAccount.Id,
+                AcceptorAccount = reply.Request.TargetAccount.ToComplex(),
                 Established = updatedRequest.DecisionDate,
             };
 
+            FriendshipService.Instance.AddFriendship(friendship);
+
+            targetAcc.Friendships.Add(friendship);
             requesterAcc.Friendships.Add(friendship);
-
-            interacter.AddOrUpdate(requesterAcc);
-
-            registrationService.UpdateCache(requesterAcc);
+            //interacter.AddOrUpdate(requesterAcc);
+            //registrationService.UpdateCache(targetAcc);
+            //registrationService.UpdateCache(requesterAcc);
 
             return updatedRequest;
         }
@@ -147,14 +156,15 @@ namespace Freengy.WebService.Services
         /// </summary>
         /// <param name="requesterId">Target user identifier.</param>
         /// <returns>Incoming requests collection.</returns>
-        public IEnumerable<ComplexFriendRequest> GetIncomingRequests(Guid requesterId)
+        public IEnumerable<ComplexFriendRequest> GetIncomingRequests(Guid requesterId) 
         {
             ValidateRequest(requesterId);
 
             bool Selector(ComplexFriendRequest request)
             {
                 bool select = 
-                    request.TargetId == requesterId.ToString() && 
+                    //request.TargetId == requesterId.ToString() && 
+                    request.TargetId == requesterId && 
                     request.RequestState == FriendRequestState.AwaitingUserAnswer;
 
                 return select;
@@ -172,7 +182,8 @@ namespace Freengy.WebService.Services
         {
             ValidateRequest(requesterId);
 
-            bool Selector(ComplexFriendRequest request) => request.ParentId == requesterId.ToString();
+            //bool Selector(ComplexFriendRequest request) => request.ParentId == requesterId.ToString();
+            bool Selector(ComplexFriendRequest request) => request.ParentId == requesterId;
 
             return SearchRequests(Selector);
         }

@@ -30,7 +30,7 @@ namespace Freengy.WebService.Extensions
             var complex = new ComplexUserAccount
             {
                 Id = otherAccount.Id,
-                UniqueId = otherAccount.UniqueId,
+                //UniqueId = otherAccount.UniqueId,
                 Name = otherAccount.Name,
                 LastLogInTime = otherAccount.LastLogInTime,
                 Privilege = otherAccount.Privilege,

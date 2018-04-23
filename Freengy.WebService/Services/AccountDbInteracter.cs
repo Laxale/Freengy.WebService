@@ -89,8 +89,8 @@ namespace Freengy.WebService.Services
                         var storedAcc = 
                             dbContext
                                 .Objects
-                                .Include(acc => acc.Friendships)
-                                .Include(acc => acc.FriendRequests)
+                                //.Include(acc => acc.Friendships)
+                                //.Include(acc => acc.FriendRequests)
                                 .FirstOrDefault(acc => acc.Id == account.Id);
                         if (storedAcc == null)
                         {
@@ -99,11 +99,8 @@ namespace Freengy.WebService.Services
                         }
                         else
                         {
-                            storedAcc.SyncUniqueIdToId();
-
                             TransferProperties(account, storedAcc);
-                            //storedAcc.Friendships = null;
-                            //storedAcc.FriendRequests = null;
+                            storedAcc.PrepareMappedProps();
 
                             Console.WriteLine($"Updated account '{ account.Name }'");
                         }
@@ -124,14 +121,20 @@ namespace Freengy.WebService.Services
         public static void TransferProperties(ComplexUserAccount from, ComplexUserAccount to) 
         {
             if(to.Id != from.Id) throw new InvalidOperationException("Id mismatch");
-            if(to.UniqueId != from.UniqueId) throw new InvalidOperationException("Unique id mismatch");
+            //if(to.UniqueId != from.UniqueId) throw new InvalidOperationException("Unique id mismatch");
 
             to.Name = from.Name;
             to.Level = from.Level;
             to.Privilege = from.Privilege;
             to.LastLogInTime = from.LastLogInTime;
-            to.Friendships = from.Friendships;
-            to.FriendRequests= from.FriendRequests;
+
+            //to.Friendships = from.Friendships;
+            to.Friendships.Clear();
+            from.Friendships.ForEach(to.Friendships.Add);
+
+            //to.FriendRequests= from.FriendRequests;
+            to.FriendRequests.Clear();
+            from.FriendRequests.ForEach(to.FriendRequests.Add);
         }
     }
 }

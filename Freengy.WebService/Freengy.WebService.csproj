@@ -91,6 +91,7 @@
     <Compile Include="Constants\ServiceDbConst.cs" />
     <Compile Include="Context\ComplexFriendRequestContext.cs" />
     <Compile Include="Context\ComplexUserContext.cs" />
+    <Compile Include="Context\FriendshipContext.cs" />
     <Compile Include="Exceptions\NotAuthorizedException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Services\AccountDbInteracter.cs" />
     <Compile Include="Services\AccountStateService.cs" />
     <Compile Include="Services\FriendRequestService.cs" />
+    <Compile Include="Services\FriendshipService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\ServicesInitializer.cs" />
     <Compile Include="Subroutes.cs" />

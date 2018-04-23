@@ -18,7 +18,7 @@ namespace Freengy.WebService.Models
     /// <summary>
     /// Service-wide user account model with non-client database relations.
     /// </summary>
-    internal class ComplexUserAccount : UserAccountModel
+    internal class ComplexUserAccount : UserAccountModel 
     {
         /// <summary>
         /// Friendship relation models of this user account.
@@ -53,9 +53,15 @@ namespace Freengy.WebService.Models
             throw new InvalidOperationException("Not an account proxy!");
         }
 
-        public override ComplexDbObject PrepareMappedProps()
+        /// <summary>
+        /// Need to clear navigation properties before storing to database.
+        /// </summary>
+        /// <returns>This instance prepared for storing to databse.</returns>
+        public override ComplexDbObject PrepareMappedProps() 
         {
-            //nothin
+            Friendships.Clear();
+            FriendRequests.Clear();
+
             return this;
         }
 
