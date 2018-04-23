@@ -23,11 +23,6 @@ namespace Freengy.WebService.Configuration
                 .WithMany(acc => acc.Friendships)
                 .HasForeignKey(friendship => friendship.ParentId)
                 .WillCascadeOnDelete(true);
-
-//            HasRequired(model => model.AcceptorAccount)
-//                .WithMany(acc => acc.Friendships)
-//                .HasForeignKey(friendship => friendship.AcceptorAccountId)
-//                .WillCascadeOnDelete(true);
         }
     }
 }
