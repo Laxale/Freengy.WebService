@@ -76,7 +76,7 @@ namespace Freengy.WebService.Modules
             var senderId = requestReply.Id;
             if (!AccountStateService.Instance.IsAuthorized(senderId, requestReply.UserToken))
             {
-                throw new NotAuthorizedException(senderId);
+                throw new ClientNotAuthorizedException(senderId);
             }
 
             FriendRequestService friendRequestService = FriendRequestService.Instance;
@@ -104,7 +104,7 @@ namespace Freengy.WebService.Modules
 
             if (!stateService.IsAuthorized(searchRequest.SenderId, searchRequest.UserToken))
             {
-                throw new NotAuthorizedException(searchRequest.SenderId);
+                throw new ClientNotAuthorizedException(searchRequest.SenderId);
             }
 
             IEnumerable<ComplexFriendRequest> requests = 

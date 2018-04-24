@@ -10,9 +10,9 @@ namespace Freengy.WebService.Exceptions
     /// <summary>
     /// Exception about not authorized request failure.
     /// </summary>
-    internal class NotAuthorizedException : Exception 
+    internal class ClientNotAuthorizedException : Exception 
     {
-        public NotAuthorizedException(Guid senderId) 
+        public ClientNotAuthorizedException(Guid senderId) 
         {
             SenderId = senderId;
         }

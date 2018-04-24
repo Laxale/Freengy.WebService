@@ -92,7 +92,7 @@
     <Compile Include="Context\ComplexFriendRequestContext.cs" />
     <Compile Include="Context\ComplexUserContext.cs" />
     <Compile Include="Context\FriendshipContext.cs" />
-    <Compile Include="Exceptions\NotAuthorizedException.cs" />
+    <Compile Include="Exceptions\ClientNotAuthorizedException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />
