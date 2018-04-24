@@ -5,6 +5,7 @@
 using System;
 
 using Freengy.Common.Constants;
+using Freengy.Common.Helpers;
 using Freengy.Database;
 using Freengy.WebService.Constants;
 using Freengy.WebService.Services;
@@ -20,8 +21,10 @@ namespace Freengy.WebService
         private static readonly int httpsPort = 22345;
         private static readonly string murkCertHash = "input cert thumb here";
         private static readonly string appPid = $"{{{ Guid.NewGuid() }}}";
-        private static readonly string httpAddress = "http://localhost:12345";
-        private static readonly string httpsAddress = $"https://localhost:{ httpsPort }";
+
+        private static readonly string httpAddressNoPort = "localhost";
+        //private static readonly string httpAddress = "http://localhost:12345";
+        //private static readonly string httpsAddress = $"https://localhost:{ httpsPort }";
         //private static readonly string httpsAddress = $"https://127.0.0.1:{ httpsPort }";
         //private static readonly string httpsAddress = $"https://www.murk.pro:{ httpsPort }";
 
@@ -30,13 +33,11 @@ namespace Freengy.WebService
         {
             try
             {
-                Console.WriteLine("Starting Freengy server");
+                Console.WriteLine("Started");
 
                 InitDatabase();
                 InitServices();
                 StartServer();
-
-                Console.WriteLine("Finished Freengy server");
             }
             catch (Exception ex)
             {
@@ -74,25 +75,24 @@ namespace Freengy.WebService
 
         private static void StartServer() 
         {
-            var baseUri = new Uri(httpAddress);
-            //var baseUri = new Uri(httpsAddress);
-            INancyBootstrapper booter = CreateBootstrapper();
-            HostConfiguration configuration = CreateConfiguration();
+            string address =
+                new ServerStartupBuilder()
+                .SetBaseAddress(httpAddressNoPort)
+                .SetInitialPort(StartupConst.InitialServerPort)
+                .SetPortStep(StartupConst.PortCheckingStep)
+                .SetTrialsCount(10)
+                .UseHttps(false)
+                .Build();
 
-            using (var host = new NancyHost(booter, configuration, baseUri))
+            Console.WriteLine($"Started server on { address }");
+
+            var keyInfo = Console.ReadKey();
+            while (keyInfo.Key != ConsoleKey.Escape)
             {
-                EnableSsl();
-                host.Start();
-
-                Console.WriteLine($"Started host on '{ baseUri.AbsoluteUri }'");
-                Console.WriteLine("Press Esc to stop");
-
-                var keyInfo = Console.ReadKey();
-                while (keyInfo.Key != ConsoleKey.Escape)
-                {
-                    keyInfo = Console.ReadKey();
-                }
+                keyInfo = Console.ReadKey();
             }
+
+            Console.WriteLine("Finished Freengy server");
         }
 
         private static HostConfiguration CreateConfiguration() 

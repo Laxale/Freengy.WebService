@@ -51,7 +51,7 @@ namespace Freengy.WebService.Modules
                     stateService.LogIn(logInRequest.Account.Name, userAddress) : 
                     stateService.LogOut(logInRequest.Account.Name);
 
-            Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { stateModel }");
+            Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { stateModel.OnlineStatus }");
 
             string responce = JsonConvert.SerializeObject(stateModel, Formatting.Indented);
 
