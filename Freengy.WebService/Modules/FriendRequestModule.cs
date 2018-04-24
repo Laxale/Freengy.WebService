@@ -9,6 +9,7 @@ using System.Linq;
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Helpers;
+using Freengy.Common.Extensions;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 using Freengy.WebService.Extensions;
@@ -72,9 +73,9 @@ namespace Freengy.WebService.Modules
 
             Console.WriteLine($"Got a friend request reply from { requestReply.Request.TargetAccount.Name } to { requestReply.Request.RequesterAccount.Name }");
 
-            //var senderId = Guid.Parse(requestReply.Id);
-            var senderId = requestReply.Id;
-            if (!AccountStateService.Instance.IsAuthorized(senderId, requestReply.UserToken))
+            Guid senderId = requestReply.Id;
+            SessionAuth clientAuth = Request.Headers.GetSessionAuth();
+            if (!AccountStateService.Instance.IsAuthorized(senderId, clientAuth.ClientToken))
             {
                 throw new ClientNotAuthorizedException(senderId);
             }
@@ -102,7 +103,8 @@ namespace Freengy.WebService.Modules
             AccountStateService stateService = AccountStateService.Instance;
             FriendRequestService requestService = FriendRequestService.Instance;
 
-            if (!stateService.IsAuthorized(searchRequest.SenderId, searchRequest.UserToken))
+            SessionAuth clientAuth = Request.Headers.GetSessionAuth();
+            if (!stateService.IsAuthorized(searchRequest.SenderId, clientAuth.ClientToken))
             {
                 throw new ClientNotAuthorizedException(searchRequest.SenderId);
             }

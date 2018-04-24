@@ -21,6 +21,11 @@ using Newtonsoft.Json;
 
 namespace Freengy.WebService.Modules 
 {
+    using Freengy.WebService.Models;
+
+    using Nancy.Responses;
+
+
     /// <summary>
     /// Module for user log in action.
     /// </summary>
@@ -37,8 +42,8 @@ namespace Freengy.WebService.Modules
         private dynamic OnLoginRequest(dynamic arg) 
         {
             var stateService = AccountStateService.Instance;
-
-            LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
+            var serializer = new SerializeHelper();
+            LoginModel logInRequest = serializer.DeserializeObject<LoginModel>(Request.Body);
 
             string direction = logInRequest.IsLoggingIn ? "in" : "out";
 
@@ -46,18 +51,29 @@ namespace Freengy.WebService.Modules
 
             string userAddress = GetUserAddress(Request);
 
-            AccountStateModel stateModel = 
-                logInRequest.IsLoggingIn ? 
-                    stateService.LogIn(logInRequest.Account.Name, userAddress) : 
-                    stateService.LogOut(logInRequest.Account.Name);
+            SessionAuth auth;
+            AccountStateModel stateModel;
+            if (logInRequest.IsLoggingIn)
+            {
+                KeyValuePair<AccountStateModel, SessionAuth> loginPair = stateService.LogIn(logInRequest.Account.Name, userAddress);
+                auth = loginPair.Value;
+                stateModel = loginPair.Key;
+            }
+            else
+            {
+                auth = new SessionAuth();
+                stateModel = stateService.LogOut(logInRequest.Account.Name);
+            }
+            
+            Console.WriteLine($"'{ logInRequest.Account.Name }' log { direction } result: { stateModel.OnlineStatus }");
 
-            Console.WriteLine($"'{ logInRequest.Account.Name }' log in result: { stateModel.OnlineStatus }");
-
-            string responce = JsonConvert.SerializeObject(stateModel, Formatting.Indented);
+            //string responce = serializer.Serialize(stateModel);
+            var jsonResponse = new JsonResponse<AccountStateModel>(stateModel, new DefaultJsonSerializer());
+            SetAuthHeaders(jsonResponse.Headers, auth);
 
             Console.WriteLine($"Logged '{ logInRequest.Account.Name }' { direction }");
 
-            return responce;
+            return jsonResponse;
         }
 
         private string GetUserAddress(Request httpRequest) 
@@ -65,6 +81,12 @@ namespace Freengy.WebService.Modules
             IEnumerable<string> headerValue = httpRequest.Headers[FreengyHeaders.ClientAddressHeaderName];
 
             return headerValue.First();
+        }
+
+        private void SetAuthHeaders(IDictionary<string, string> headers, SessionAuth auth) 
+        {
+            headers.Add(FreengyHeaders.ClientAddressHeaderName, auth.ClientToken);
+            headers.Add(FreengyHeaders.ServerSessionTokenHeaderName, auth.ServerToken);
         }
     }
 }

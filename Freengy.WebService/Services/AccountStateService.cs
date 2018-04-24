@@ -30,13 +30,10 @@ namespace Freengy.WebService.Services
 
         private static AccountStateService instance;
 
-        private readonly List<AccountStateModel> accountStates = new List<AccountStateModel>();
+        private readonly Dictionary<AccountStateModel, SessionAuth> accountStates = new Dictionary<AccountStateModel, SessionAuth>();
+        
 
-
-        private AccountStateService() 
-        {
-
-        }
+        private AccountStateService() { }
 
 
         /// <summary>
@@ -72,11 +69,10 @@ namespace Freengy.WebService.Services
                         {
                             Account = account,
                             Address = string.Empty,
-                            SessionToken = string.Empty,
                             OnlineStatus = AccountOnlineStatus.Offline
                         };
 
-                        accountStates.Add(state);
+                        accountStates.Add(state, new SessionAuth());
                     }
                 }
 
@@ -95,31 +91,44 @@ namespace Freengy.WebService.Services
         /// <summary>
         /// Get the state of a given account.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">Account identifier.</param>
+        /// <returns>Account state model.</returns>
         public AccountStateModel GetStatusOf(Guid userId) 
         {
             lock (Locker)
             {
-                var stateModel = accountStates.FirstOrDefault(state => state.Account.Id == userId);
-
-                return stateModel;
+                try
+                {
+                    var stateModel = accountStates.First(statePair => statePair.Key.Account.Id == userId);
+                    return stateModel.Key;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return null;
+                }
             }
         }
 
+        /// <summary>
+        /// Check if user is authorized.
+        /// </summary>
+        /// <param name="requesterId">Target use identifier.</param>
+        /// <param name="requesterToken">Target user session token.</param>
+        /// <returns>True if user is authorized.</returns>
         public bool IsAuthorized(Guid requesterId, string requesterToken) 
         {
-            AccountStateModel requesterAccountState = accountStates.FirstOrDefault(state => state.Account.Id == requesterId);
+            AccountStateModel requesterAccountState = GetStatusOf(requesterId);
 
             bool isAuthorized =
-                requesterAccountState != null && 
-                requesterAccountState.OnlineStatus != AccountOnlineStatus.Offline && 
-                requesterAccountState.SessionToken == requesterToken;
+                requesterAccountState != null &&
+                requesterAccountState.OnlineStatus != AccountOnlineStatus.Offline &&
+                accountStates[requesterAccountState].ClientToken == requesterToken;
 
             return isAuthorized;
         }
 
-        public AccountStateModel LogIn(string userName, string userAddress) 
+        public KeyValuePair<AccountStateModel, SessionAuth> LogIn(string userName, string userAddress) 
         {
             ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
 
@@ -150,29 +159,30 @@ namespace Freengy.WebService.Services
         }
 
 
-        private AccountStateModel LogInImpl(UserAccountModel accountModel, string userAddress) 
+        private KeyValuePair<AccountStateModel, SessionAuth> LogInImpl(UserAccountModel accountModel, string userAddress) 
         {
-            AccountStateModel savedAccountState = accountStates.FirstOrDefault(state => state.Account.Id == accountModel.Id);
+            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id);
 
             if (savedAccountState == null)
             {
-                var newModel = CreateNewState(accountModel, userAddress);
-                newModel.Account.LastLogInTime = DateTime.Now;
-                
-                return newModel;
+                KeyValuePair<AccountStateModel, SessionAuth> statePair = CreateNewStatePair(accountModel, userAddress);
+
+                return statePair;
             }
 
             savedAccountState.Address = userAddress;
-            savedAccountState.SessionToken = CreateSessionToken();
             savedAccountState.Account.LastLogInTime = DateTime.Now;
             savedAccountState.OnlineStatus = AccountOnlineStatus.Online;
 
-            return savedAccountState;
+            accountStates[savedAccountState].ClientToken = CreateNewToken();
+            accountStates[savedAccountState].ServerToken = CreateNewToken();
+
+            return accountStates.First(pair => pair.Key.Account.Id == savedAccountState.Account.Id);
         }
 
-        private AccountStateModel LogOutImpl(UserAccountModel accountModel) 
+        private AccountStateModel LogOutImpl(UserAccountModel accountModel)
         {
-            AccountStateModel savedAccountState = accountStates.FirstOrDefault(state => state.Account.Id == accountModel.Id);
+            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id);
 
             if (savedAccountState == null)
             {
@@ -187,7 +197,7 @@ namespace Freengy.WebService.Services
             return savedAccountState;
         }
 
-        private AccountStateModel CreateNewState(UserAccountModel accountModel, string address) 
+        private KeyValuePair<AccountStateModel, SessionAuth> CreateNewStatePair(UserAccountModel accountModel, string address) 
         {
             accountModel.LastLogInTime = DateTime.Now;
 
@@ -195,17 +205,23 @@ namespace Freengy.WebService.Services
             {
                 Address = address,
                 Account = accountModel,
-                SessionToken = CreateSessionToken(),
                 OnlineStatus = AccountOnlineStatus.Online
             };
+            var auth = new SessionAuth
+            {
+                ClientToken = CreateNewToken(),
+                ServerToken = CreateNewToken()
+            };
 
-            accountStates.Add(newState);
-            return newState;
+            var pair = new KeyValuePair<AccountStateModel, SessionAuth>(newState, auth);
+            accountStates.Add(newState, auth);
+
+            return pair;
         }
 
-        private string CreateSessionToken() 
+        private string CreateNewToken() 
         {
-            string source = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
+            string source = Guid.NewGuid().ToString();
 
             string token = new Hasher().GetHash(source);
 
