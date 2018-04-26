@@ -33,7 +33,13 @@ namespace Freengy.WebService.Models
         /// </summary>
         public DateTime Established { get; set; }
 
-        
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Friendship from '{NavigationParent?.Name}' to '{AcceptorAccount?.Name}'";
+        }
+
         public override DbObject CreateFromProxy(DbObject dbProxy) 
         {
             throw new InvalidOperationException("FFFUUUU");

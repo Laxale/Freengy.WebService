@@ -103,24 +103,27 @@ namespace Freengy.WebService.Modules
             return loginPair;
         }
 
-        private void InformFriendsAboutLogin(KeyValuePair<AccountStateModel, SessionAuth> friendIdLoginPair, bool isLoggedIn) 
+        private void InformFriendsAboutLogin(KeyValuePair<AccountStateModel, SessionAuth> userLoginPair, bool isLoggedIn)
         {
-            var friendships = FriendshipService.Instance.FindByInvitor(friendIdLoginPair.Key.Account.Id);
+            var userId = userLoginPair.Key.Account.Id;
+            var friendships = FriendshipService.Instance.FindUserFriendships(userId);
 
             foreach (FriendshipModel friendship in friendships)
             {
-                var valuePair = AccountStateService.Instance.GetStatusOf(friendship.AcceptorAccountId);
-                if(valuePair == null) throw new InvalidOperationException($"Got null friend state");
+                var friendId = friendship.AcceptorAccountId == userId ? friendship.ParentId : friendship.AcceptorAccountId;
+                var friendValuePair = AccountStateService.Instance.GetStatusOf(friendId);
+                if(friendValuePair == null) throw new InvalidOperationException($"Got null friend state");
 
-                KeyValuePair<AccountStateModel, SessionAuth> friendStatePair = valuePair.Value;
+                KeyValuePair<AccountStateModel, SessionAuth> friendStatePair = friendValuePair.Value;
                 if (friendStatePair.Key.OnlineStatus == AccountOnlineStatus.Online)
                 {
                     using (IHttpActor actor = new HttpActor())
                     {
-                        string targetFriendAddress = $"{friendStatePair.Key.Address}/{Subroutes.NotifyClient.NotifyFriendState}/{valuePair.Value.Value.ClientToken}";
+                        string targetFriendAddress = $"{friendStatePair.Key.Address.TrimEnd('/')}{Subroutes.NotifyClient.NotifyFriendState}";
                         actor.SetRequestAddress(targetFriendAddress);
-                        actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendIdLoginPair.Value.ServerToken);
-                        actor.PostAsync<AccountStateModel, AccountStateModel>(friendStatePair.Key);
+                        actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendStatePair.Value.ServerToken);
+
+                        var result = actor.PostAsync<AccountStateModel, AccountStateModel>(userLoginPair.Key).Result;
                     }
                 }
             }

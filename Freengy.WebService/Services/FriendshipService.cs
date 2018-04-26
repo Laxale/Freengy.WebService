@@ -89,11 +89,11 @@ namespace Freengy.WebService.Services
             return cachedFriendship;
         }
 
-        public IEnumerable<FriendshipModel> FindByInvitor(Guid invitorId) 
+        public IEnumerable<FriendshipModel> FindUserFriendships(Guid accountId) 
         {
-            if (invitorId == Guid.Empty) throw new InvalidOperationException("Invitor id must not be empty");
+            if (accountId == Guid.Empty) throw new InvalidOperationException("Account id must not be empty");
 
-            var cachedFriendship = friendshipsCache.Where(model => model.ParentId == invitorId);
+            var cachedFriendship = friendshipsCache.Where(model => model.ParentId == accountId || model.AcceptorAccountId == accountId);
 
             return cachedFriendship;
         }
