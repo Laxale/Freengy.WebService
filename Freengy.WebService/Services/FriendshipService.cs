@@ -28,10 +28,7 @@ namespace Freengy.WebService.Services
         private static FriendshipService instance;
 
         
-        private FriendshipService() 
-        {
-
-        }
+        private FriendshipService() { }
 
 
         /// <summary>
@@ -88,6 +85,15 @@ namespace Freengy.WebService.Services
             if(acceptorId == Guid.Empty) throw new InvalidOperationException("Acceptor id must not be empty");
 
             var cachedFriendship = friendshipsCache.Where(model => model.AcceptorAccountId == acceptorId);
+
+            return cachedFriendship;
+        }
+
+        public IEnumerable<FriendshipModel> FindByInvitor(Guid invitorId) 
+        {
+            if (invitorId == Guid.Empty) throw new InvalidOperationException("Invitor id must not be empty");
+
+            var cachedFriendship = friendshipsCache.Where(model => model.ParentId == invitorId);
 
             return cachedFriendship;
         }

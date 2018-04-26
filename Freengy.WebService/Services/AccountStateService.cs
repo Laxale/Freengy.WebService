@@ -93,14 +93,14 @@ namespace Freengy.WebService.Services
         /// </summary>
         /// <param name="userId">Account identifier.</param>
         /// <returns>Account state model.</returns>
-        public AccountStateModel GetStatusOf(Guid userId) 
+        public KeyValuePair<AccountStateModel, SessionAuth>? GetStatusOf(Guid userId) 
         {
             lock (Locker)
             {
                 try
                 {
-                    var stateModel = accountStates.First(statePair => statePair.Key.Account.Id == userId);
-                    return stateModel.Key;
+                    var userStatePair = accountStates.First(statePair => statePair.Key.Account.Id == userId);
+                    return userStatePair;
                 }
                 catch (Exception ex)
                 {
@@ -118,7 +118,7 @@ namespace Freengy.WebService.Services
         /// <returns>True if user is authorized.</returns>
         public bool IsAuthorized(Guid requesterId, string requesterToken) 
         {
-            AccountStateModel requesterAccountState = GetStatusOf(requesterId);
+            AccountStateModel requesterAccountState = GetStatusOf(requesterId)?.Key;
 
             bool isAuthorized =
                 requesterAccountState != null &&
@@ -143,6 +143,11 @@ namespace Freengy.WebService.Services
             }
         }
 
+        /// <summary>
+        /// Log the user out.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <returns>User account state model.</returns>
         public AccountStateModel LogOut(string userName) 
         {
             ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
@@ -161,7 +166,7 @@ namespace Freengy.WebService.Services
 
         private KeyValuePair<AccountStateModel, SessionAuth> LogInImpl(UserAccountModel accountModel, string userAddress) 
         {
-            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id);
+            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id)?.Key;
 
             if (savedAccountState == null)
             {
@@ -182,7 +187,7 @@ namespace Freengy.WebService.Services
 
         private AccountStateModel LogOutImpl(UserAccountModel accountModel)
         {
-            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id);
+            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id)?.Key;
 
             if (savedAccountState == null)
             {

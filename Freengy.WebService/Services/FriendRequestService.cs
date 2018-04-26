@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Data.Entity;
 using System.Collections.Generic;
 
 using Freengy.Common.Enums;
@@ -19,9 +20,6 @@ using NLog;
 
 namespace Freengy.WebService.Services 
 {
-    using System.Data.Entity;
-
-
     internal class FriendRequestService : IService 
     {
         private static readonly object Locker = new object();
@@ -30,10 +28,7 @@ namespace Freengy.WebService.Services
         private static FriendRequestService instance;
         
 
-        private FriendRequestService() 
-        {
-            
-        }
+        private FriendRequestService() { }
 
 
         /// <summary>
@@ -120,9 +115,7 @@ namespace Freengy.WebService.Services
         {
             ComplexFriendRequest updatedRequest = SaveReplyState(reply);
 
-            var interacter = AccountDbInteracter.Instance;
             var registrationService = RegistrationService.Instance;
-            //var requesterId = reply.Request.RequesterAccount.UniqueId;
             var targetId = reply.Request.TargetAccount.Id;
             var requesterId = reply.Request.RequesterAccount.Id;
 
