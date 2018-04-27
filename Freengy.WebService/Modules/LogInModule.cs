@@ -52,12 +52,12 @@ namespace Freengy.WebService.Modules
 
             string userAddress = GetUserAddress(Request);
 
-            KeyValuePair<AccountStateModel, SessionAuth> resultPair = LogInOrOut(logInRequest, userAddress);
+            ComplexAccountState accountState = LogInOrOut(logInRequest, userAddress);
             
-            Console.WriteLine($"'{ logInRequest.Account.Name }' log { direction } result: { resultPair.Key.OnlineStatus }");
+            Console.WriteLine($"'{ logInRequest.Account.Name }' log { direction } result: { accountState.StateModel.OnlineStatus }");
 
-            var jsonResponse = new JsonResponse<AccountStateModel>(resultPair.Key, new DefaultJsonSerializer());
-            SetAuthHeaders(jsonResponse.Headers, resultPair.Value);
+            var jsonResponse = new JsonResponse<AccountStateModel>(accountState.StateModel, new DefaultJsonSerializer());
+            SetAuthHeaders(jsonResponse.Headers, accountState.ClientAuth);
 
             Console.WriteLine($"Logged '{ logInRequest.Account.Name }' { direction }");
 
@@ -77,53 +77,51 @@ namespace Freengy.WebService.Modules
             headers.Add(FreengyHeaders.ServerSessionTokenHeaderName, auth.ServerToken);
         }
 
-        private KeyValuePair<AccountStateModel, SessionAuth> LogInOrOut(LoginModel logInRequest, string userAddress)
+        private ComplexAccountState LogInOrOut(LoginModel logInRequest, string userAddress)
         {
             bool isLoggingIn = logInRequest.IsLoggingIn;
             var stateService = AccountStateService.Instance;
             var targetStatus = isLoggingIn ? AccountOnlineStatus.Online : AccountOnlineStatus.Offline;
 
-            KeyValuePair<AccountStateModel, SessionAuth> loginPair;
+            ComplexAccountState complexAccountState;
             if (isLoggingIn)
             {
-                loginPair = stateService.LogIn(logInRequest.Account.Name, userAddress);
+                complexAccountState = stateService.LogIn(logInRequest.Account.Name, userAddress);
             }
             else
             {
-                var auth = new SessionAuth();
                 var stateModel = stateService.LogOut(logInRequest.Account.Name);
-                loginPair = new KeyValuePair<AccountStateModel, SessionAuth>(stateModel, auth);
+                complexAccountState = new ComplexAccountState(stateModel);
             }
 
-            if (loginPair.Key.OnlineStatus == targetStatus)
+            if (complexAccountState.StateModel.OnlineStatus == targetStatus)
             {
-                InformFriendsAboutLogin(loginPair, isLoggingIn);
+                InformFriendsAboutLogin(complexAccountState);
             }
 
-            return loginPair;
+            return complexAccountState;
         }
 
-        private void InformFriendsAboutLogin(KeyValuePair<AccountStateModel, SessionAuth> userLoginPair, bool isLoggedIn)
+        private void InformFriendsAboutLogin(ComplexAccountState complexState) 
         {
-            var userId = userLoginPair.Key.Account.Id;
+            var userId = complexState.StateModel.Account.Id;
             var friendships = FriendshipService.Instance.FindUserFriendships(userId);
 
             foreach (FriendshipModel friendship in friendships)
             {
-                var friendId = friendship.AcceptorAccountId == userId ? friendship.ParentId : friendship.AcceptorAccountId;
-                var friendValuePair = AccountStateService.Instance.GetStatusOf(friendId);
-                if(friendValuePair == null) throw new InvalidOperationException($"Got null friend state");
+                Guid friendId = friendship.AcceptorAccountId == userId ? friendship.ParentId : friendship.AcceptorAccountId;
+                ComplexAccountState friendAccountState = AccountStateService.Instance.GetStatusOf(friendId);
+                if(friendAccountState == null) throw new InvalidOperationException($"Got null friend state");
 
-                KeyValuePair<AccountStateModel, SessionAuth> friendStatePair = friendValuePair.Value;
-                if (friendStatePair.Key.OnlineStatus == AccountOnlineStatus.Online)
+                if (friendAccountState.StateModel.OnlineStatus == AccountOnlineStatus.Online)
                 {
                     using (IHttpActor actor = new HttpActor())
                     {
-                        string targetFriendAddress = $"{friendStatePair.Key.Address.TrimEnd('/')}{Subroutes.NotifyClient.NotifyFriendState}";
+                        string targetFriendAddress = $"{friendAccountState.StateModel.Address.TrimEnd('/')}{Subroutes.NotifyClient.NotifyFriendState}";
                         actor.SetRequestAddress(targetFriendAddress);
-                        actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendStatePair.Value.ServerToken);
+                        actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
 
-                        var result = actor.PostAsync<AccountStateModel, AccountStateModel>(userLoginPair.Key).Result;
+                        var result = actor.PostAsync<AccountStateModel, AccountStateModel>(complexState.StateModel).Result;
                     }
                 }
             }

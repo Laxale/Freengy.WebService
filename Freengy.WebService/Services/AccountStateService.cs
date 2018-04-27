@@ -9,10 +9,14 @@ using System.Linq;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Helpers;
+using Freengy.Common.Constants;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
 using Freengy.WebService.Models;
@@ -25,12 +29,15 @@ namespace Freengy.WebService.Services
 {
     internal class AccountStateService : IService 
     {
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly int maxFailResponces = 3;
+        private static readonly int updatePeriodInMs = 1000;
         private static readonly object Locker = new object();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
 
         private static AccountStateService instance;
 
-        private readonly Dictionary<AccountStateModel, SessionAuth> accountStates = new Dictionary<AccountStateModel, SessionAuth>();
+        private readonly List<ComplexAccountState> accountStates = new List<ComplexAccountState>();
         
 
         private AccountStateService() { }
@@ -72,9 +79,11 @@ namespace Freengy.WebService.Services
                             OnlineStatus = AccountOnlineStatus.Offline
                         };
 
-                        accountStates.Add(state, new SessionAuth());
+                        accountStates.Add(new ComplexAccountState(state));
                     }
                 }
+
+                StartUpdateCycle();
 
                 string message = $"Initialized {nameof(AccountStateService)}";
                 Console.WriteLine(message);
@@ -93,14 +102,14 @@ namespace Freengy.WebService.Services
         /// </summary>
         /// <param name="userId">Account identifier.</param>
         /// <returns>Account state model.</returns>
-        public KeyValuePair<AccountStateModel, SessionAuth>? GetStatusOf(Guid userId) 
+        public ComplexAccountState GetStatusOf(Guid userId) 
         {
             lock (Locker)
             {
                 try
                 {
-                    var userStatePair = accountStates.First(statePair => statePair.Key.Account.Id == userId);
-                    return userStatePair;
+                    var complexAccountState = accountStates.First(statePair => statePair.StateModel.Account.Id == userId);
+                    return complexAccountState;
                 }
                 catch (Exception ex)
                 {
@@ -118,17 +127,23 @@ namespace Freengy.WebService.Services
         /// <returns>True if user is authorized.</returns>
         public bool IsAuthorized(Guid requesterId, string requesterToken) 
         {
-            AccountStateModel requesterAccountState = GetStatusOf(requesterId)?.Key;
+            ComplexAccountState requesterAccountState = GetStatusOf(requesterId);
 
             bool isAuthorized =
                 requesterAccountState != null &&
-                requesterAccountState.OnlineStatus != AccountOnlineStatus.Offline &&
-                accountStates[requesterAccountState].ClientToken == requesterToken;
+                requesterAccountState.StateModel.OnlineStatus != AccountOnlineStatus.Offline &&
+                requesterAccountState.ClientAuth.ClientToken == requesterToken;
 
             return isAuthorized;
         }
 
-        public KeyValuePair<AccountStateModel, SessionAuth> LogIn(string userName, string userAddress) 
+        /// <summary>
+        /// Log the user in.
+        /// </summary>
+        /// <param name="userName">User account name.</param>
+        /// <param name="userAddress">User address.</param>
+        /// <returns>Account state model and user authentication.</returns>
+        public ComplexAccountState LogIn(string userName, string userAddress) 
         {
             ComplexUserAccount account = RegistrationService.Instance.FindByName(userName);
 
@@ -164,45 +179,44 @@ namespace Freengy.WebService.Services
         }
 
 
-        private KeyValuePair<AccountStateModel, SessionAuth> LogInImpl(UserAccountModel accountModel, string userAddress) 
+        private ComplexAccountState LogInImpl(UserAccountModel accountModel, string userAddress) 
         {
-            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id)?.Key;
+            ComplexAccountState savedAccountState = GetStatusOf(accountModel.Id);
 
             if (savedAccountState == null)
             {
-                KeyValuePair<AccountStateModel, SessionAuth> statePair = CreateNewStatePair(accountModel, userAddress);
+                ComplexAccountState statePair = CreateNewStatePair(accountModel, userAddress);
 
                 return statePair;
             }
 
-            savedAccountState.Address = userAddress;
-            savedAccountState.Account.LastLogInTime = DateTime.Now;
-            savedAccountState.OnlineStatus = AccountOnlineStatus.Online;
+            savedAccountState.StateModel.Address = userAddress;
+            savedAccountState.ClientAuth.ClientToken = CreateNewToken();
+            savedAccountState.ClientAuth.ServerToken = CreateNewToken();
+            savedAccountState.StateModel.Account.LastLogInTime = DateTime.Now;
+            savedAccountState.StateModel.OnlineStatus = AccountOnlineStatus.Online;
 
-            accountStates[savedAccountState].ClientToken = CreateNewToken();
-            accountStates[savedAccountState].ServerToken = CreateNewToken();
-
-            return accountStates.First(pair => pair.Key.Account.Id == savedAccountState.Account.Id);
+            return savedAccountState;
         }
 
-        private AccountStateModel LogOutImpl(UserAccountModel accountModel)
+        private AccountStateModel LogOutImpl(UserAccountModel accountModel) 
         {
-            AccountStateModel savedAccountState = GetStatusOf(accountModel.Id)?.Key;
+            ComplexAccountState savedAccountState = GetStatusOf(accountModel.Id);
 
             if (savedAccountState == null)
             {
                 throw new InvalidOperationException($"Cannot log '{ accountModel.Name }' out - account state not saved");
             }
 
-            savedAccountState.Address = string.Empty;
-            savedAccountState.OnlineStatus = AccountOnlineStatus.Offline;
+            savedAccountState.StateModel.Address = string.Empty;
+            savedAccountState.StateModel.OnlineStatus = AccountOnlineStatus.Offline;
 
-            AccountDbInteracter.Instance.AddOrUpdate(savedAccountState.Account.ToComplex());
+            AccountDbInteracter.Instance.AddOrUpdate(savedAccountState.StateModel.Account.ToComplex());
 
-            return savedAccountState;
+            return savedAccountState.StateModel;
         }
 
-        private KeyValuePair<AccountStateModel, SessionAuth> CreateNewStatePair(UserAccountModel accountModel, string address) 
+        private ComplexAccountState CreateNewStatePair(UserAccountModel accountModel, string address) 
         {
             accountModel.LastLogInTime = DateTime.Now;
 
@@ -212,16 +226,13 @@ namespace Freengy.WebService.Services
                 Account = accountModel,
                 OnlineStatus = AccountOnlineStatus.Online
             };
-            var auth = new SessionAuth
-            {
-                ClientToken = CreateNewToken(),
-                ServerToken = CreateNewToken()
-            };
+            
+            var complexState = new ComplexAccountState(newState);
+            complexState.ClientAuth.ClientToken = CreateNewToken();
+            complexState.ClientAuth.ServerToken = CreateNewToken();
+            accountStates.Add(complexState);
 
-            var pair = new KeyValuePair<AccountStateModel, SessionAuth>(newState, auth);
-            accountStates.Add(newState, auth);
-
-            return pair;
+            return complexState;
         }
 
         private string CreateNewToken() 
@@ -231,6 +242,74 @@ namespace Freengy.WebService.Services
             string token = new Hasher().GetHash(source);
 
             return token;
+        }
+
+        private void StartUpdateCycle() 
+        {
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(updatePeriodInMs);
+
+                    Update();
+                }
+            });
+        }
+
+        private async void Update() 
+        {
+            foreach (ComplexAccountState complexAccountState in accountStates)
+            {
+                if (complexAccountState.StateModel.OnlineStatus == AccountOnlineStatus.Offline) continue;
+
+                if (complexAccountState.FailResponceCount > maxFailResponces)
+                {
+                    complexAccountState.FailResponceCount = 0;
+                    complexAccountState.StateModel.OnlineStatus = AccountOnlineStatus.Offline;
+                }
+
+                try
+                {
+                    await GetClientState(complexAccountState);
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine(ex);
+                    complexAccountState.FailResponceCount++;
+                }
+            }
+        }
+
+        private static async Task GetClientState(ComplexAccountState complexAccountState) 
+        {
+            using (var actor = new HttpActor())
+            {
+                string address = $"{complexAccountState.StateModel.Address}{Subroutes.NotifyClient.RequestState}";
+                actor
+                    .SetRequestAddress(address)
+                    .AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, complexAccountState.ClientAuth.ServerToken);
+
+                Task<HttpResponseMessage> responce = await 
+                    actor.GetAsync()
+                         .ContinueWith(task =>
+                         {
+                             if (task.Exception != null)
+                             {
+                                 complexAccountState.FailResponceCount++;
+                             }
+
+                             return task;
+                         });
+
+                if (responce.Result.StatusCode != HttpStatusCode.OK)
+                {
+                    complexAccountState.FailResponceCount++;
+                    string message = $"Client {complexAccountState.StateModel.Account.Name} replied wrong status. Count: {complexAccountState.FailResponceCount}";
+
+                    Console.WriteLine(message);
+                }
+            }
         }
     }
 }

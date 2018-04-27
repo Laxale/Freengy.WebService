@@ -76,13 +76,15 @@ namespace Freengy.WebService
             public static readonly string FriendRequest = $"{ Root }/friendrequest";
         }
 
-        public static class NotifyClient
+        public static class NotifyClient 
         {
             private static readonly string inform = "inform";
 
             public static readonly string Root = "/fromserver";
 
             public static readonly string NotifyFriendState = $"{Root}/{inform}/friend/state";
+
+            public static readonly string RequestState = $"{Root}/replystate";
         }
     }
 }

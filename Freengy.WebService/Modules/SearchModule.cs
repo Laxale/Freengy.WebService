@@ -97,12 +97,10 @@ namespace Freengy.WebService.Modules
                         friendship.NavigationParent : 
                         friendship.AcceptorAccount;
 
-                var statePair = stateService.GetStatusOf(account.Id);
-                if(statePair == null) throw new InvalidOperationException($"Found null state pair for account id { account.Id }");
+                ComplexAccountState complexAccountState = stateService.GetStatusOf(account.Id);
+                if(complexAccountState == null) throw new InvalidOperationException($"Found null state pair for account id { account.Id }");
 
-                AccountStateModel accountState = statePair.Value.Key;
-
-                return accountState;
+                return complexAccountState.StateModel;
             }
 
             var friends = senderAcc.Friendships.Select(AccountStateSelector);

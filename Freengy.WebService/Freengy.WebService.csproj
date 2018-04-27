@@ -96,6 +96,7 @@
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />
+    <Compile Include="Models\ComplexAccountState.cs" />
     <Compile Include="Models\ComplexFriendRequest.cs" />
     <Compile Include="Models\ComplexUserAccount.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
