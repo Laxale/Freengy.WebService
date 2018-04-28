@@ -23,8 +23,8 @@ namespace Freengy.WebService
         private static readonly string murkCertHash = "input cert thumb here";
         private static readonly string appPid = $"{{{ Guid.NewGuid() }}}";
 
-        private static readonly string httpAddressNoPort = "192.168.213.146";
-        //private static readonly string httpAddressNoPort = "localhost";
+        //private static readonly string httpAddressNoPort = "192.168.213.146";
+        private static readonly string httpAddressNoPort = "localhost";
         //private static readonly string httpAddress = "http://localhost:12345";
         //private static readonly string httpsAddress = $"https://localhost:{ httpsPort }";
         //private static readonly string httpsAddress = $"https://127.0.0.1:{ httpsPort }";
@@ -87,6 +87,7 @@ namespace Freengy.WebService
                 .Build();
 
             $"Started server on { address }".WriteToConsole();
+            "Press Esc to exit".WriteToConsole();
 
             var keyInfo = Console.ReadKey();
             while (keyInfo.Key != ConsoleKey.Escape)
