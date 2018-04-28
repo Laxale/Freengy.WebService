@@ -8,6 +8,7 @@ using Freengy.Common.Constants;
 using Freengy.Common.Helpers;
 using Freengy.Database;
 using Freengy.WebService.Constants;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Services;
 using Nancy;
 using Nancy.Bootstrapper;
@@ -22,7 +23,8 @@ namespace Freengy.WebService
         private static readonly string murkCertHash = "input cert thumb here";
         private static readonly string appPid = $"{{{ Guid.NewGuid() }}}";
 
-        private static readonly string httpAddressNoPort = "localhost";
+        private static readonly string httpAddressNoPort = "192.168.213.146";
+        //private static readonly string httpAddressNoPort = "localhost";
         //private static readonly string httpAddress = "http://localhost:12345";
         //private static readonly string httpsAddress = $"https://localhost:{ httpsPort }";
         //private static readonly string httpsAddress = $"https://127.0.0.1:{ httpsPort }";
@@ -33,7 +35,7 @@ namespace Freengy.WebService
         {
             try
             {
-                Console.WriteLine("Started");
+                "App started".WriteToConsole();
 
                 InitDatabase();
                 InitServices();
@@ -41,11 +43,11 @@ namespace Freengy.WebService
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                ex.Message.WriteToConsole(ConsoleColor.Red);
             }
             finally
             {
-                Console.WriteLine("Press any key to finish");
+                "Press any key to finish".WriteToConsole();
                 Console.ReadKey();
             }
         }
@@ -57,7 +59,7 @@ namespace Freengy.WebService
             Initializer.SetStorageDirectoryPath(appDataFolderPath);
             Initializer.SetDbFileName(ServiceDbConst.DbFileName);
 
-            Console.WriteLine("Initialized database");
+            "Initialized database".WriteToConsole();
         }
 
         private static void InitServices() 
@@ -70,7 +72,7 @@ namespace Freengy.WebService
                 .Register(RegistrationService.Instance)
                 .InitRegistered();
 
-            Console.WriteLine("Initialized services");
+            "Initialized services".WriteToConsole();
         }
 
         private static void StartServer() 
@@ -84,7 +86,7 @@ namespace Freengy.WebService
                 .UseHttps(false)
                 .Build();
 
-            Console.WriteLine($"Started server on { address }");
+            $"Started server on { address }".WriteToConsole();
 
             var keyInfo = Console.ReadKey();
             while (keyInfo.Key != ConsoleKey.Escape)
@@ -92,7 +94,7 @@ namespace Freengy.WebService
                 keyInfo = Console.ReadKey();
             }
 
-            Console.WriteLine("Finished Freengy server");
+            "Finished Freengy server".WriteToConsole();
         }
 
         private static HostConfiguration CreateConfiguration() 
@@ -108,7 +110,7 @@ namespace Freengy.WebService
 
             config.UnhandledExceptionCallback = ex =>
             {
-                Console.WriteLine($"Unhandled ex: { ex.Message }");
+                $"Unhandled ex: { ex.Message }".WriteToConsole(ConsoleColor.Red);
             };
 
             return config;

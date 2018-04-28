@@ -17,6 +17,7 @@ using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Helpers;
 using Freengy.Common.Constants;
+using Freengy.Common.Extensions;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
@@ -87,13 +88,13 @@ namespace Freengy.WebService.Services
                 StartUpdateCycle();
 
                 string message = $"Initialized {nameof(AccountStateService)}";
-                Console.WriteLine(message);
+                //message.WriteToConsole();
                 logger.Info(message);
             }
             catch (Exception ex)
             {
                 string message = $"Failed to initialize {nameof(AccountStateService)}";
-                Console.WriteLine(ex);
+                message.WriteToConsole();
                 logger.Error(ex, message);
             }
         }
@@ -114,7 +115,7 @@ namespace Freengy.WebService.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    ex.Message.WriteToConsole();
                     return null;
                 }
             }
@@ -302,6 +303,7 @@ namespace Freengy.WebService.Services
                         {
                             responce = null;
                             complexAccountState.FailResponceCount++;
+                            logger.Error(task.Exception.GetReallyRootException(), "Failed to get async response");
                         }
                         else
                         {
@@ -313,9 +315,10 @@ namespace Freengy.WebService.Services
                 if (responce?.StatusCode != HttpStatusCode.OK)
                 {
                     complexAccountState.FailResponceCount++;
-                    string message = $"Client {complexAccountState.StateModel.Account.Name} replied wrong status. Count: {complexAccountState.FailResponceCount}";
+                    string message = $"Client {complexAccountState.StateModel.Account.Name} replied wrong status '{ responce?.StatusCode }'. " +
+                                     $"Count: {complexAccountState.FailResponceCount}";
 
-                    Console.WriteLine(message);
+                    message.WriteToConsole();
                 }
             }
         }

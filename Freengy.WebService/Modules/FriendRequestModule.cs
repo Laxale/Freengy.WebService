@@ -14,7 +14,7 @@ using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 using Freengy.WebService.Extensions;
 using Freengy.WebService.Exceptions;
-
+using Freengy.WebService.Helpers;
 using Nancy;
 
 
@@ -28,7 +28,7 @@ namespace Freengy.WebService.Modules
         public FriendRequestModule() 
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"Created { nameof(FriendRequestModule) }");
+            $"Created { nameof(FriendRequestModule) }".WriteToConsole();
             Console.ForegroundColor = ConsoleColor.White;
 
             Post[Subroutes.Request.AddFriend] = OnAddFriendRequest;
@@ -41,7 +41,7 @@ namespace Freengy.WebService.Modules
         {
             var friendRequest = new SerializeHelper().DeserializeObject<FriendRequest>(Request.Body);
 
-            Console.WriteLine($"Got a friend request from { friendRequest.RequesterAccount.Name } to { friendRequest.TargetAccount.Name }");
+            $"Got a friend request from { friendRequest.RequesterAccount.Name } to { friendRequest.TargetAccount.Name }".WriteToConsole();
 
             RegistrationService registrationService = RegistrationService.Instance;
             FriendRequestService friendRequestService = FriendRequestService.Instance;
@@ -52,14 +52,14 @@ namespace Freengy.WebService.Modules
 
                 friendRequest.RequestState = result.RequestState;
 
-                Console.WriteLine($"Saved request with result '{ friendRequest.RequestState }'");
+                $"Saved request with result '{ friendRequest.RequestState }'".WriteToConsole();
 
                 string serialized = new SerializeHelper().Serialize(friendRequest);
 
                 return serialized;
             }
 
-            Console.WriteLine($"Target acount { friendRequest.TargetAccount.Name } doesnt exist");
+            $"Target acount { friendRequest.TargetAccount.Name } doesnt exist".WriteToConsole();
 
             friendRequest.RequestState = FriendRequestState.DoesntExist;
 
@@ -71,7 +71,8 @@ namespace Freengy.WebService.Modules
             var helper = new SerializeHelper();
             var requestReply = helper.DeserializeObject<FriendRequestReply>(Request.Body);
 
-            Console.WriteLine($"Got a friend request reply from { requestReply.Request.TargetAccount.Name } to { requestReply.Request.RequesterAccount.Name }");
+            $"Got a friend request reply from { requestReply.Request.TargetAccount.Name } to { requestReply.Request.RequesterAccount.Name }"
+                .WriteToConsole();
 
             Guid senderId = requestReply.Id;
             SessionAuth clientAuth = Request.Headers.GetSessionAuth();

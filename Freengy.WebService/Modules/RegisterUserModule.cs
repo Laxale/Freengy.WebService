@@ -8,6 +8,7 @@ using System.IO;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 
@@ -30,7 +31,7 @@ namespace Freengy.WebService.Modules
         {
             //this.RequiresHttps();
 
-            Console.WriteLine($"Created { nameof(RegisterUserModule) }");
+            $"Created { nameof(RegisterUserModule) }".WriteToConsole();
 
             Post[Subroutes.Register] = OnRegisterRequest;
         }
@@ -39,7 +40,7 @@ namespace Freengy.WebService.Modules
         private dynamic OnRegisterRequest(dynamic argument) 
         {
             //logger.Info();
-            Console.WriteLine("Incame register request:");
+            "Incame register request:".WriteToConsole();
 
             var helper = new SerializeHelper();
             var registrationRequest = helper.DeserializeObject<RegistrationRequest>(Request.Body);
@@ -51,7 +52,7 @@ namespace Freengy.WebService.Modules
             registrationRequest.Status = registrationStatus;
             registrationRequest.CreatedAccount = registeredAcc;
 
-            Console.WriteLine($"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }");
+            $"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }".WriteToConsole();
             string jsonResponce = helper.Serialize(registrationRequest);
 
             return jsonResponce;

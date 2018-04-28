@@ -13,6 +13,7 @@ using Freengy.WebService.Context;
 using Freengy.WebService.Models;
 using Freengy.Common.Models;
 using Freengy.WebService.Extensions;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Interfaces;
 
 using NLog;
@@ -63,7 +64,7 @@ namespace Freengy.WebService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                ex.Message.WriteToConsole(ConsoleColor.Red);
                 logger.Error(ex, $"Failed to initialize { nameof(FriendRequestService) } service");
             }
         }

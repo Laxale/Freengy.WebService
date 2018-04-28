@@ -37,7 +37,7 @@ namespace Freengy.WebService.Modules
     {
         public LogInModule() 
         {
-            Console.WriteLine($"Created { nameof(LogInModule) }");
+           $"Created { nameof(LogInModule) }".WriteToConsole();
 
             Post[Subroutes.Login] = OnLoginRequest;
         }
@@ -50,19 +50,19 @@ namespace Freengy.WebService.Modules
             bool isLoggingIn = logInRequest.IsLoggingIn;
             string direction = isLoggingIn ? "in" : "out";
 
-            Console.WriteLine($"Got '{ logInRequest.Account.Name }' log { direction } request");
+            $"Got '{ logInRequest.Account.Name }' log { direction } request".WriteToConsole();
 
             string userAddress = GetUserAddress(Request);
 
             if (string.IsNullOrEmpty(userAddress))
             {
-                Console.WriteLine($"Client { logInRequest.Account.Name } didnt attach his address");
+                $"Client { logInRequest.Account.Name } didnt attach his address".WriteToConsole();
                 throw new InvalidOperationException("Client address must be set in headers");
             }
 
             ComplexAccountState accountState = LogInOrOut(logInRequest, userAddress);
             
-            Console.WriteLine($"'{ logInRequest.Account.Name }' log { direction } result: { accountState.StateModel.OnlineStatus }");
+            $"'{ logInRequest.Account.Name } [{ userAddress }]' log { direction } result: { accountState.StateModel.OnlineStatus }".WriteToConsole();
 
             var jsonResponse = new JsonResponse<AccountStateModel>(accountState.StateModel, new DefaultJsonSerializer());
             SetAuthHeaders(jsonResponse.Headers, accountState.ClientAuth);

@@ -13,6 +13,7 @@ using Freengy.Common.Restrictions;
 using Freengy.Database.Context;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
 
@@ -79,7 +80,7 @@ namespace Freengy.WebService.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    ex.Message.WriteToConsole(ConsoleColor.Red);
                 }
             }
         }
@@ -214,7 +215,7 @@ namespace Freengy.WebService.Services
                 {
                     string message = $"Failed to register account '{newAccount.Name}': {ex.Message}";
                     logger.Error(ex, "Failed to register account");
-                    Console.WriteLine(message);
+                    message.WriteToConsole(ConsoleColor.Red);
 
                     return RegistrationStatus.Error;
                 }

@@ -8,6 +8,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Freengy.WebService.Context;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
 
@@ -70,7 +71,7 @@ namespace Freengy.WebService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                ex.Message.WriteToConsole(ConsoleColor.Red);
                 logger.Error(ex, $"Failed to initialize { nameof(FriendshipService) } service");
             }
         }

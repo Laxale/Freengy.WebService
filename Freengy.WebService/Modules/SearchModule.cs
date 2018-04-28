@@ -9,6 +9,7 @@ using System.Linq;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 
@@ -24,7 +25,7 @@ namespace Freengy.WebService.Modules
     {
         public SearchModule() 
         {
-            Console.WriteLine($"Created { nameof(SearchModule) }");
+            $"Created { nameof(SearchModule) }".WriteToConsole();
 
             Get[Subroutes.Search.Root] = OnRootSearchRequest;
 
@@ -34,14 +35,14 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnRootSearchRequest(dynamic arg) 
         {
-            Console.WriteLine("Got root searching request");
+            "Got root searching request".WriteToConsole();
 
             return $"Use {Subroutes.Search.SearchUsers} to search for users";
         }
 
         private dynamic OnSearchUsersRequest(dynamic arg) 
         {
-            Console.WriteLine("Got searching users request");
+            "Got searching users request".WriteToConsole();
 
             var helper = new SerializeHelper();
             var searchRequest = helper.DeserializeObject<SearchRequest>(Request.Body);

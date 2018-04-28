@@ -9,6 +9,7 @@ using System.Linq;
 using Freengy.Common.Models;
 using Freengy.Database.Context;
 using Freengy.WebService.Context;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
 
@@ -69,7 +70,7 @@ namespace Freengy.WebService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                ex.Message.WriteToConsole(ConsoleColor.Red);
                 logger.Error(ex, $"Failed to initialize { nameof(AccountDbInteracter) } service");
             }
         }
@@ -95,23 +96,23 @@ namespace Freengy.WebService.Services
                         if (storedAcc == null)
                         {
                             dbContext.Objects.Add(account);
-                            Console.WriteLine($"Added new account '{ account.Name }'");
+                            $"Added new account '{ account.Name }'".WriteToConsole();
                         }
                         else
                         {
                             TransferProperties(account, storedAcc);
                             storedAcc.PrepareMappedProps();
 
-                            Console.WriteLine($"Updated account '{ account.Name }'");
+                            $"Updated account '{ account.Name }'".WriteToConsole();
                         }
 
                         dbContext.SaveChanges();
-                        Console.WriteLine("Saved account changes");
+                        "Saved account changes".WriteToConsole();
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    ex.Message.WriteToConsole(ConsoleColor.Red);
                     logger.Error(ex, $"Failed to add or update account '{ account.Name }'");
                 }
             }

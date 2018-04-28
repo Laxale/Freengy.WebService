@@ -10,6 +10,16 @@ namespace Freengy.WebService.Helpers
     internal static class WriterExtensions 
     {
         /// <summary>
+        /// Write a message to console with a default font color.
+        /// </summary>
+        /// <param name="message">Message to write.</param>
+        public static void WriteToConsole(this string message) 
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            WriteImpl(message);
+        }
+
+        /// <summary>
         /// Write a message to console with a given font color.
         /// </summary>
         /// <param name="message">Message to write.</param>
@@ -17,8 +27,14 @@ namespace Freengy.WebService.Helpers
         public static void WriteToConsole(this string message, ConsoleColor inColor) 
         {
             Console.ForegroundColor = inColor;
-            Console.WriteLine(message);
+            WriteImpl(message);
             Console.ForegroundColor = ConsoleColor.White;
+        }
+
+
+        private static void WriteImpl(string message) 
+        {
+            Console.WriteLine($"[{ DateTime.Now }] { message }");
         }
     }
 }
