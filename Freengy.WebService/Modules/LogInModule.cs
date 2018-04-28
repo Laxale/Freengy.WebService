@@ -52,6 +52,12 @@ namespace Freengy.WebService.Modules
 
             string userAddress = GetUserAddress(Request);
 
+            if (string.IsNullOrEmpty(userAddress))
+            {
+                Console.WriteLine($"Client { logInRequest.Account.Name } didnt attach his address");
+                throw new InvalidOperationException("Client address must be set in headers");
+            }
+
             ComplexAccountState accountState = LogInOrOut(logInRequest, userAddress);
             
             Console.WriteLine($"'{ logInRequest.Account.Name }' log { direction } result: { accountState.StateModel.OnlineStatus }");
@@ -117,7 +123,7 @@ namespace Freengy.WebService.Modules
                 {
                     using (IHttpActor actor = new HttpActor())
                     {
-                        string targetFriendAddress = $"{friendAccountState.StateModel.Address.TrimEnd('/')}{Subroutes.NotifyClient.NotifyFriendState}";
+                        string targetFriendAddress = $"{ friendAccountState.StateModel.Address }{ Subroutes.NotifyClient.NotifyFriendState }";
                         actor.SetRequestAddress(targetFriendAddress);
                         actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
 

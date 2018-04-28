@@ -257,7 +257,7 @@ namespace Freengy.WebService.Services
             });
         }
 
-        private async void Update() 
+        private void Update() 
         {
             foreach (ComplexAccountState complexAccountState in accountStates)
             {
@@ -267,11 +267,12 @@ namespace Freengy.WebService.Services
                 {
                     complexAccountState.FailResponceCount = 0;
                     complexAccountState.StateModel.OnlineStatus = AccountOnlineStatus.Offline;
+                    continue;
                 }
 
                 try
                 {
-                    await GetClientState(complexAccountState);
+                    GetClientState(complexAccountState);
                 }
                 catch (Exception ex)
                 {
@@ -281,7 +282,7 @@ namespace Freengy.WebService.Services
             }
         }
 
-        private static async Task GetClientState(ComplexAccountState complexAccountState) 
+        private static void GetClientState(ComplexAccountState complexAccountState) 
         {
             using (var actor = new HttpActor())
             {
@@ -290,7 +291,7 @@ namespace Freengy.WebService.Services
                     .SetRequestAddress(address)
                     .AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, complexAccountState.ClientAuth.ServerToken);
 
-                Task<HttpResponseMessage> responce = await 
+                Task<HttpResponseMessage> responce =  
                     actor.GetAsync()
                          .ContinueWith(task =>
                          {
@@ -300,7 +301,7 @@ namespace Freengy.WebService.Services
                              }
 
                              return task;
-                         });
+                         }).Result;
 
                 if (responce.Result.StatusCode != HttpStatusCode.OK)
                 {

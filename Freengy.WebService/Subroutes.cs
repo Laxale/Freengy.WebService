@@ -80,7 +80,7 @@ namespace Freengy.WebService
         {
             private static readonly string inform = "inform";
 
-            public static readonly string Root = "/fromserver";
+            public static readonly string Root = "fromserver";
 
             public static readonly string NotifyFriendState = $"{Root}/{inform}/friend/state";
 
