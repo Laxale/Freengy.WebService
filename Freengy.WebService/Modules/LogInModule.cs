@@ -14,11 +14,13 @@ using Freengy.Common.Helpers;
 using Freengy.Common.Interfaces;
 using Freengy.Common.Models;
 using Freengy.Common.Models.Readonly;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Services;
 
 using Nancy;
 
 using Newtonsoft.Json;
+using NLog.Targets.Wrappers;
 
 
 namespace Freengy.WebService.Modules 
@@ -45,8 +47,8 @@ namespace Freengy.WebService.Modules
         {
             var stateService = AccountStateService.Instance;
             LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
-
-            string direction = logInRequest.IsLoggingIn ? "in" : "out";
+            bool isLoggingIn = logInRequest.IsLoggingIn;
+            string direction = isLoggingIn ? "in" : "out";
 
             Console.WriteLine($"Got '{ logInRequest.Account.Name }' log { direction } request");
 
@@ -65,7 +67,7 @@ namespace Freengy.WebService.Modules
             var jsonResponse = new JsonResponse<AccountStateModel>(accountState.StateModel, new DefaultJsonSerializer());
             SetAuthHeaders(jsonResponse.Headers, accountState.ClientAuth);
 
-            Console.WriteLine($"Logged '{ logInRequest.Account.Name }' { direction }");
+            $"Logged '{ logInRequest.Account.Name }' { direction }".WriteToConsole(isLoggingIn ? ConsoleColor.Green : ConsoleColor.Magenta);
 
             return jsonResponse;
         }

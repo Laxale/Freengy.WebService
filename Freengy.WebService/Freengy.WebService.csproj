@@ -95,6 +95,7 @@
     <Compile Include="Exceptions\ClientNotAuthorizedException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
+    <Compile Include="Helpers\WriterExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />
     <Compile Include="Models\ComplexAccountState.cs" />
     <Compile Include="Models\ComplexFriendRequest.cs" />

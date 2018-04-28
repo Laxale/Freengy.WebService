@@ -19,6 +19,7 @@ using Freengy.Common.Helpers;
 using Freengy.Common.Constants;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
+using Freengy.WebService.Helpers;
 using Freengy.WebService.Models;
 using Freengy.WebService.Interfaces;
 
@@ -267,6 +268,7 @@ namespace Freengy.WebService.Services
                 {
                     complexAccountState.FailResponceCount = 0;
                     complexAccountState.StateModel.OnlineStatus = AccountOnlineStatus.Offline;
+                    $"Considered user '{ complexAccountState.StateModel.Account.Name }' offline".WriteToConsole(ConsoleColor.Magenta);
                     continue;
                 }
 
@@ -291,19 +293,24 @@ namespace Freengy.WebService.Services
                     .SetRequestAddress(address)
                     .AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, complexAccountState.ClientAuth.ServerToken);
 
-                Task<HttpResponseMessage> responce =  
-                    actor.GetAsync()
-                         .ContinueWith(task =>
-                         {
-                             if (task.Exception != null)
-                             {
-                                 complexAccountState.FailResponceCount++;
-                             }
+                HttpResponseMessage responce = null;
+                actor
+                    .GetAsync()
+                    .ContinueWith(task =>
+                    {
+                        if (task.Exception != null)
+                        {
+                            responce = null;
+                            complexAccountState.FailResponceCount++;
+                        }
+                        else
+                        {
+                            responce = task.Result;
+                        }
+                    })
+                    .Wait();
 
-                             return task;
-                         }).Result;
-
-                if (responce.Result.StatusCode != HttpStatusCode.OK)
+                if (responce?.StatusCode != HttpStatusCode.OK)
                 {
                     complexAccountState.FailResponceCount++;
                     string message = $"Client {complexAccountState.StateModel.Account.Name} replied wrong status. Count: {complexAccountState.FailResponceCount}";
