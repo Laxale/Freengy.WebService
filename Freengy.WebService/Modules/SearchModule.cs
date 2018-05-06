@@ -89,6 +89,8 @@ namespace Freengy.WebService.Modules
                 return $"Account id {searchRequest.SenderId} is not registered";
             }
 
+            UpdateFriendships(senderAcc);
+
             var stateService = AccountStateService.Instance;
 
             AccountStateModel AccountStateSelector(FriendshipModel friendship)
@@ -109,6 +111,14 @@ namespace Freengy.WebService.Modules
             var serialized = helper.Serialize(friends);
 
             return serialized;
+        }
+
+        private void UpdateFriendships(ComplexUserAccount account) 
+        {
+            IEnumerable<FriendshipModel> senderFriendships = FriendshipService.Instance.FindUserFriendships(account.Id);
+
+            account.Friendships.Clear();
+            account.Friendships.AddRange(senderFriendships);
         }
     }
 }
