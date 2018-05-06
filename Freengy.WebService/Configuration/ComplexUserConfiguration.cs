@@ -20,6 +20,8 @@ namespace Freengy.WebService.Configuration
         public ComplexUserConfiguration() 
         {
             ToTable($"{nameof(UserAccount)}s");
+
+            //Map<ComplexUserAccount>(m => m.ToTable($"{nameof(UserAccount)}s").Requires("Discriminator").HasValue(nameof(ComplexUserAccount)));
         }
     }
 }

@@ -14,6 +14,7 @@ using Freengy.Common.Helpers;
 using Freengy.Common.Interfaces;
 using Freengy.Common.Models;
 using Freengy.Common.Models.Readonly;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
 using Freengy.WebService.Services;
 
@@ -33,20 +34,40 @@ namespace Freengy.WebService.Modules
     /// <summary>
     /// Module for user log in action.
     /// </summary>
-    public class LogInModule : NancyModule 
+    public class LogInModule : NancyModule
     {
+        private LoginModel logInRequest;
+
+
         public LogInModule() 
         {
-           $"Created { nameof(LogInModule) }".WriteToConsole();
+            $"Created { nameof(LogInModule) }".WriteToConsole();
+
+            Before.AddItemToStartOfPipeline(ValidateUserPassword);
 
             Post[Subroutes.Login] = OnLoginRequest;
         }
 
 
+        private Response ValidateUserPassword(NancyContext nancyContext) 
+        {
+            logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
+
+            bool isPasswordValid = RegistrationService.Instance.ValidatePassword(logInRequest.Account.Name, logInRequest.PasswordHash);
+
+            if (!isPasswordValid)
+            {
+                logInRequest.LogInStatus = AccountOnlineStatus.InvalidPassword;
+                $"{ logInRequest.Account.Name } provided invalid password".WriteToConsole(ConsoleColor.Red);
+                return HttpStatusCode.Forbidden;
+            }
+
+            return null;
+        }
+        
         private dynamic OnLoginRequest(dynamic arg) 
         {
-            var stateService = AccountStateService.Instance;
-            LoginModel logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
+            //logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
             bool isLoggingIn = logInRequest.IsLoggingIn;
             string direction = isLoggingIn ? "in" : "out";
 
@@ -64,6 +85,11 @@ namespace Freengy.WebService.Modules
             
             $"'{ logInRequest.Account.Name } [{ userAddress }]' log { direction } result: { accountState.StateModel.OnlineStatus }".WriteToConsole();
 
+            // сложный аккаунт нужно упростить, иначе при дефолтной сериализации получается бесконечная рекурсия ссылающихся друг на друга свойств
+            if (accountState.StateModel.Account is ComplexUserAccount complexAcc)
+            {
+                accountState.StateModel.Account = complexAcc.ToSimpleModel();
+            }
             var jsonResponse = new JsonResponse<AccountStateModel>(accountState.StateModel, new DefaultJsonSerializer());
             SetAuthHeaders(jsonResponse.Headers, accountState.ClientAuth);
 

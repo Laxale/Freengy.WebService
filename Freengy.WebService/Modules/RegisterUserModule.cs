@@ -5,9 +5,11 @@
 using System;
 using System.IO;
 
+using Freengy.Common.Constants;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
@@ -15,6 +17,7 @@ using Freengy.WebService.Services;
 using NLog;
 
 using Nancy;
+using Nancy.Responses;
 using Nancy.Security;
 
 using Newtonsoft.Json;
@@ -39,7 +42,6 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnRegisterRequest(dynamic argument) 
         {
-            //logger.Info();
             "Incame register request:".WriteToConsole();
 
             var helper = new SerializeHelper();
@@ -47,13 +49,15 @@ namespace Freengy.WebService.Modules
             
             var service = RegistrationService.Instance;
 
-            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest.UserName, out ComplexUserAccount registeredAcc);
+            RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest, out ComplexUserAccount registeredAcc);
 
             registrationRequest.Status = registrationStatus;
-            registrationRequest.CreatedAccount = registeredAcc;
-
+            registrationRequest.CreatedAccount = registeredAcc.ToSimpleModel();
+            
             $"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }".WriteToConsole();
-            string jsonResponce = helper.Serialize(registrationRequest);
+            //string jsonResponce = helper.Serialize(registrationRequest);
+            var jsonResponce = new JsonResponse<RegistrationRequest>(registrationRequest, new DefaultJsonSerializer());
+            jsonResponce.Headers.Add(FreengyHeaders.NextPasswordSaltHeaderName, registeredAcc.PasswordData.NextLoginSalt);
 
             return jsonResponce;
         }

@@ -10,6 +10,23 @@ namespace Freengy.WebService.Extensions
 {
     internal static class AccountExtensions 
     {
+        public static UserAccountModel ToSimpleModel(this ComplexUserAccount complexAccount)
+        {
+            var simpleModel = new UserAccountModel
+            {
+                LastLogInTime = complexAccount.LastLogInTime,
+                Id = complexAccount.Id,
+                Name = complexAccount.Name,
+                RegistrationTime = complexAccount.RegistrationTime,
+                Level = complexAccount.Level,
+                Privilege = complexAccount.Privilege
+            };
+
+            simpleModel.Albums.AddRange(complexAccount.Albums);
+
+            return simpleModel;
+        }
+
         public static ComplexUserAccount ToComplex(this UserAccountModel simpleAccount) 
         {
             var complex = CreateFrom(simpleAccount);

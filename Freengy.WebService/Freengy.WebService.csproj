@@ -88,6 +88,7 @@
     <Compile Include="Configuration\ComplexFriendRequestConfiguration.cs" />
     <Compile Include="Configuration\ComplexUserConfiguration.cs" />
     <Compile Include="Configuration\FriendshipConfiguration.cs" />
+    <Compile Include="Configuration\PasswordConfiguration.cs" />
     <Compile Include="Constants\ServiceDbConst.cs" />
     <Compile Include="Context\ComplexFriendRequestContext.cs" />
     <Compile Include="Context\ComplexUserContext.cs" />
@@ -95,12 +96,14 @@
     <Compile Include="Exceptions\ClientNotAuthorizedException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
+    <Compile Include="Extensions\HttpHeaderExtensions.cs" />
     <Compile Include="Helpers\WriterExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />
     <Compile Include="Models\ComplexAccountState.cs" />
     <Compile Include="Models\ComplexFriendRequest.cs" />
     <Compile Include="Models\ComplexUserAccount.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
+    <Compile Include="Models\Password.cs" />
     <Compile Include="Modules\FriendRequestModule.cs" />
     <Compile Include="Modules\HelloModule.cs" />
     <Compile Include="Modules\RegisterUserModule.cs" />
