@@ -76,6 +76,9 @@ namespace Freengy.WebService
             public static readonly string FriendRequest = $"{ Root }/friendrequest";
         }
 
+        /// <summary>
+        /// Contains subroutes to notify clients.
+        /// </summary>
         public static class NotifyClient 
         {
             private static readonly string inform = "inform";
@@ -84,7 +87,11 @@ namespace Freengy.WebService
 
             public static readonly string NotifyFriendState = $"{Root}/{inform}/friend/state";
 
-            public static readonly string RequestState = $"{Root}/replystate";
+            public static readonly string RequestUserState = $"{Root}/replystate";
+
+            public static readonly string NotifyFriendRequest = $"{Root}/{ inform }/friendrequest";
+
+            public static readonly string NotifyFriendRequestState = $"{ NotifyFriendRequest }/state";
         }
     }
 }

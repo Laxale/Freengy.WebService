@@ -120,6 +120,7 @@
     <Compile Include="Services\PasswordService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\ServicesInitializer.cs" />
+    <Compile Include="Services\UserInformerService.cs" />
     <Compile Include="Subroutes.cs" />
   </ItemGroup>
   <ItemGroup>

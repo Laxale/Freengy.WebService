@@ -283,7 +283,7 @@ namespace Freengy.WebService.Services
         {
             using (var actor = new HttpActor())
             {
-                string address = $"{complexAccountState.StateModel.Address}{Subroutes.NotifyClient.RequestState}";
+                string address = $"{complexAccountState.StateModel.Address}{Subroutes.NotifyClient.RequestUserState}";
                 actor
                     .SetRequestAddress(address)
                     .AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, complexAccountState.ClientAuth.ServerToken);

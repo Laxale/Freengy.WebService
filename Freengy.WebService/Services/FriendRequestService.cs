@@ -27,7 +27,11 @@ namespace Freengy.WebService.Services
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private static FriendRequestService instance;
-        
+
+        private readonly AccountStateService stateService = AccountStateService.Instance;
+        private readonly FriendshipService friendshipService = FriendshipService.Instance;
+        private readonly UserInformerService informerService = UserInformerService.Instance;
+
 
         private FriendRequestService() { }
 
@@ -132,7 +136,7 @@ namespace Freengy.WebService.Services
                 Established = updatedRequest.DecisionDate,
             };
 
-            FriendshipService.Instance.SaveFriendship(friendship);
+            friendshipService.SaveFriendship(friendship);
 
             return updatedRequest;
         }

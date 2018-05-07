@@ -115,6 +115,18 @@ namespace Freengy.WebService.Services
         }
 
         /// <summary>
+        /// FInd all friendship relations of a given user.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public IEnumerable<FriendshipModel> FindAllFriendships(Guid userId) 
+        {
+            IEnumerable<FriendshipModel> allFriendships = FindByAcceptor(userId).Union(FindByInvoker(userId), new FriendshipComparer());
+
+            return allFriendships;
+        }
+
+        /// <summary>
         /// Save the friendship to database.
         /// </summary>
         /// <param name="friendship">Friendship model.</param>
@@ -154,9 +166,7 @@ namespace Freengy.WebService.Services
         /// <param name="account"></param>
         public void UpdateFriendships(ComplexUserAccount account) 
         {
-            IEnumerable<FriendshipModel> outFriendships = FindByInvoker(account.Id);
-            IEnumerable<FriendshipModel> inFriendships = FindByAcceptor(account.Id);
-            IEnumerable<FriendshipModel> allAccountFriendships = outFriendships.Union(inFriendships, new FriendshipComparer());
+            IEnumerable<FriendshipModel> allAccountFriendships = FindAllFriendships(account.Id);
 
             account.Friendships.Clear();
             account.Friendships.AddRange(allAccountFriendships);

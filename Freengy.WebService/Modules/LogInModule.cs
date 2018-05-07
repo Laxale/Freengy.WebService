@@ -23,9 +23,6 @@ using Nancy.Responses;
 
 namespace Freengy.WebService.Modules 
 {
-    
-
-
     /// <summary>
     /// Module for user log in action.
     /// </summary>
@@ -134,26 +131,14 @@ namespace Freengy.WebService.Modules
 
         private void InformFriendsAboutLogin(ComplexAccountState complexState) 
         {
-            var userId = complexState.StateModel.Account.Id;
-            var friendships = FriendshipService.Instance.FindByInvoker(userId);
+            var informer = UserInformerService.Instance;
+            Guid userId = complexState.StateModel.Account.Id;
+            IEnumerable<FriendshipModel> friendships = FriendshipService.Instance.FindAllFriendships(userId);
 
             foreach (FriendshipModel friendship in friendships)
             {
                 Guid friendId = friendship.AcceptorAccountId == userId ? friendship.ParentId : friendship.AcceptorAccountId;
-                ComplexAccountState friendAccountState = AccountStateService.Instance.GetStatusOf(friendId);
-                if(friendAccountState == null) throw new InvalidOperationException($"Got null friend state");
-
-                if (friendAccountState.StateModel.OnlineStatus == AccountOnlineStatus.Online)
-                {
-                    using (IHttpActor actor = new HttpActor())
-                    {
-                        string targetFriendAddress = $"{ friendAccountState.StateModel.Address }{ Subroutes.NotifyClient.NotifyFriendState }";
-                        actor.SetRequestAddress(targetFriendAddress);
-                        actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
-
-                        var result = actor.PostAsync<AccountStateModel, AccountStateModel>(complexState.StateModel).Result;
-                    }
-                }
+                informer.NotifyFriendAboutLogin(friendId, complexState);
             }
         }
     }

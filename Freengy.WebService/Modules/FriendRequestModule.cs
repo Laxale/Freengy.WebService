@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using System.Threading.Tasks;
 using Freengy.Common.Enums;
 using Freengy.Common.Models;
 using Freengy.Common.Helpers;
@@ -15,6 +16,7 @@ using Freengy.WebService.Services;
 using Freengy.WebService.Extensions;
 using Freengy.WebService.Exceptions;
 using Freengy.WebService.Helpers;
+
 using Nancy;
 
 
@@ -56,6 +58,11 @@ namespace Freengy.WebService.Modules
 
                 string serialized = new SerializeHelper().Serialize(friendRequest);
 
+                Task.Run(() =>
+                {
+                    UserInformerService.Instance.NotifyUserAboutFriendRequest(friendRequest.TargetAccount.Id, friendRequest);
+                });
+
                 return serialized;
             }
 
@@ -81,9 +88,17 @@ namespace Freengy.WebService.Modules
                 throw new ClientNotAuthorizedException(senderId);
             }
 
+            AccountStateService stateService = AccountStateService.Instance;
+            UserInformerService informerService = UserInformerService.Instance;
             FriendRequestService friendRequestService = FriendRequestService.Instance;
 
             ComplexFriendRequest processedRequest = friendRequestService.ReplyToRequest(requestReply);
+
+            Task.Run(() =>
+            {
+                informerService.NotifyUserAboutFriendReply(requestReply.Request.RequesterAccount.Id, requestReply);
+            });
+
             requestReply.EstablishedDate = processedRequest.DecisionDate;
             var serialized = helper.Serialize(requestReply);
 
