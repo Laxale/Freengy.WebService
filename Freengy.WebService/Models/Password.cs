@@ -38,6 +38,8 @@ namespace Freengy.WebService.Models
 
             return new Password
             {
+                Id = passwordProxy.Id,
+                ParentId = passwordProxy.ParentId,
                 NextLoginSalt = passwordProxy.NextLoginSalt,
                 NextPasswordHash = passwordProxy.NextPasswordHash
             };

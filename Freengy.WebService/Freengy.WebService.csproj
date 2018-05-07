@@ -93,10 +93,12 @@
     <Compile Include="Context\ComplexFriendRequestContext.cs" />
     <Compile Include="Context\ComplexUserContext.cs" />
     <Compile Include="Context\FriendshipContext.cs" />
+    <Compile Include="Context\PasswordContext.cs" />
     <Compile Include="Exceptions\ClientNotAuthorizedException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
     <Compile Include="Extensions\HttpHeaderExtensions.cs" />
+    <Compile Include="Helpers\FriendshipComparer.cs" />
     <Compile Include="Helpers\WriterExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />
     <Compile Include="Models\ComplexAccountState.cs" />
@@ -115,6 +117,7 @@
     <Compile Include="Services\AccountStateService.cs" />
     <Compile Include="Services\FriendRequestService.cs" />
     <Compile Include="Services\FriendshipService.cs" />
+    <Compile Include="Services\PasswordService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\ServicesInitializer.cs" />
     <Compile Include="Subroutes.cs" />

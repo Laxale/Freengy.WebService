@@ -33,6 +33,7 @@ namespace Freengy.WebService.Services
 
         private static RegistrationService instance;
 
+        private readonly PasswordService passwordService = PasswordService.Instance;
         private readonly List<ComplexUserAccount> registeredAccounts = new List<ComplexUserAccount>();
 
 
@@ -59,7 +60,25 @@ namespace Freengy.WebService.Services
         /// </summary>
         public void Initialize() 
         {
-            ReadAccounts();
+            try
+            {
+                using (var dbContext = new ComplexUserContext())
+                {
+                    List<ComplexUserAccount> accounts = dbContext.Objects.ToList();
+
+                    registeredAccounts.AddRange(accounts);
+                }
+
+                $"Cached {registeredAccounts.Count} accounts".WriteToConsole();
+
+                logger.Info($"Initialized {nameof(RegistrationService)}");
+            }
+            catch (Exception ex)
+            {
+                ex.Message.WriteToConsole(ConsoleColor.Red);
+                logger.Error($"Failed to initialize {nameof(RegistrationService)}");
+                throw;
+            }
         }
 
         public void UpdateCache(ComplexUserAccount account) 
@@ -82,23 +101,6 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public bool ValidatePassword(string userName, string saltedPasswordHash) 
-        {
-            var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
-
-            if (targetAcc == null)
-            {
-                throw new InvalidOperationException($"Account '{ userName }' is not registered");
-            }
-
-            var hasher = new Hasher();
-            var doubleHash = hasher.GetHash(targetAcc.PasswordData.NextLoginSalt + saltedPasswordHash);
-
-            bool areEqual = doubleHash == targetAcc.PasswordData.NextPasswordHash;
-
-            return areEqual;
-        }
-
         public RegistrationStatus RegisterAccount(RegistrationRequest request, out ComplexUserAccount registeredAcc) 
         {
             UserAccountModel existingAccount = FindByName(request.UserName);
@@ -114,7 +116,7 @@ namespace Freengy.WebService.Services
                 Name = request.UserName
             };
 
-            Password passwordData = CreatePasswordData(request.Password);
+            Password passwordData = passwordService.CreatePasswordData(request.Password);
             passwordData.ParentId = newAccount.Id;
 
             newAccount.PasswordDatas.Add(passwordData);
@@ -181,50 +183,11 @@ namespace Freengy.WebService.Services
         }
 
 
-        private void ReadAccounts() 
+        internal IEnumerable<ComplexUserAccount> GetAllForInitialize() 
         {
-            using (var dbContext = new ComplexUserContext())
-            {
-                var objects = 
-                    dbContext
-                        .Objects
-                        .Include(acc => acc.PasswordDatas)
-                        .Include(acc => acc.Friendships)
-                        .Include(acc => acc.FriendRequests)
-                        .ToList();
-
-                if (!objects.Any()) return;
-
-                foreach (ComplexUserAccount account in objects)
-                {
-                    var realAccount = (ComplexUserAccount)account.CreateFromProxy(account);
-                    realAccount.PasswordData = realAccount.PasswordDatas[0];
-
-                    // автоматически из контекста цепляются только дружбы по основному внешнему ключу - исходящие.
-                    // руками нужно добавить дружбы, которые для данного аккаунта являются входящими
-                    var incomingFriendships = FriendshipService.Instance.FindByAcceptor(realAccount.Id);
-                    realAccount.Friendships.AddRange(incomingFriendships);
-
-                    registeredAccounts.Add(realAccount);
-                }
-            }
+            return registeredAccounts;
         }
 
-        private static Password CreatePasswordData(string password) 
-        {
-            var hasher = new Hasher();
-            string nextSalt = hasher.GetHash(Guid.NewGuid().ToString());
-            string passwordHash = hasher.GetHash(nextSalt + password);
-            string nextTotalHash = hasher.GetHash(nextSalt + passwordHash);
-
-            var passwordData = new Password
-            {
-                NextLoginSalt = nextSalt,
-                NextPasswordHash = nextTotalHash
-            };
-
-            return passwordData;
-        }
 
         private RegistrationStatus RegisterAccount(ComplexUserAccount newAccount, out ComplexUserAccount registeredAcc) 
         {
@@ -243,6 +206,7 @@ namespace Freengy.WebService.Services
                     AccountDbInteracter.Instance.AddOrUpdate(trimmedComplexAcc);
 
                     registeredAccounts.Add(trimmedComplexAcc);
+                    passwordService.SavePassword(newAccount.PasswordDatas[0], false);
 
                     registeredAcc = trimmedComplexAcc;
 

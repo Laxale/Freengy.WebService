@@ -77,9 +77,7 @@ namespace Freengy.WebService.Services
         public ComplexFriendRequest Save(FriendRequest request) 
         {
             RegistrationService service = RegistrationService.Instance;
-            //ComplexUserAccount requester = service.FindById(request.RequesterAccount.UniqueId);
             ComplexUserAccount requester = service.FindById(request.RequesterAccount.Id);
-            //ComplexUserAccount target = service.FindById(request.TargetAccount.UniqueId);
             ComplexUserAccount target = service.FindById(request.TargetAccount.Id);
 
             using (var context = new ComplexFriendRequestContext())
@@ -134,13 +132,7 @@ namespace Freengy.WebService.Services
                 Established = updatedRequest.DecisionDate,
             };
 
-            FriendshipService.Instance.AddFriendship(friendship);
-
-            targetAcc.Friendships.Add(friendship);
-            requesterAcc.Friendships.Add(friendship);
-            //interacter.AddOrUpdate(requesterAcc);
-            //registrationService.UpdateCache(targetAcc);
-            //registrationService.UpdateCache(requesterAcc);
+            FriendshipService.Instance.SaveFriendship(friendship);
 
             return updatedRequest;
         }

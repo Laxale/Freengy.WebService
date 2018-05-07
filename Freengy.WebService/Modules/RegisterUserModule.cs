@@ -52,12 +52,15 @@ namespace Freengy.WebService.Modules
             RegistrationStatus registrationStatus = service.RegisterAccount(registrationRequest, out ComplexUserAccount registeredAcc);
 
             registrationRequest.Status = registrationStatus;
-            registrationRequest.CreatedAccount = registeredAcc.ToSimpleModel();
             
             $"Registered account '{ registrationRequest.UserName }' with result { registrationStatus }".WriteToConsole();
-            //string jsonResponce = helper.Serialize(registrationRequest);
+
             var jsonResponce = new JsonResponse<RegistrationRequest>(registrationRequest, new DefaultJsonSerializer());
-            jsonResponce.Headers.Add(FreengyHeaders.NextPasswordSaltHeaderName, registeredAcc.PasswordData.NextLoginSalt);
+            if (registeredAcc != null)
+            {
+                registrationRequest.CreatedAccount = registeredAcc.ToSimpleModel();
+                jsonResponce.Headers.Add(FreengyHeaders.NextPasswordSaltHeaderName, registeredAcc.PasswordData.NextLoginSalt);
+            }
 
             return jsonResponce;
         }

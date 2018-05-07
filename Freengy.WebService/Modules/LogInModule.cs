@@ -5,9 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+
 using Freengy.Common.Constants;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
@@ -17,28 +15,25 @@ using Freengy.Common.Models.Readonly;
 using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
 using Freengy.WebService.Services;
+using Freengy.WebService.Models;
 
 using Nancy;
-
-using Newtonsoft.Json;
-using NLog.Targets.Wrappers;
+using Nancy.Responses;
 
 
 namespace Freengy.WebService.Modules 
 {
-    using Freengy.WebService.Models;
-
-    using Nancy.Responses;
+    
 
 
     /// <summary>
     /// Module for user log in action.
     /// </summary>
-    public class LogInModule : NancyModule
+    public class LogInModule : NancyModule 
     {
         private LoginModel logInRequest;
 
-
+        
         public LogInModule() 
         {
             $"Created { nameof(LogInModule) }".WriteToConsole();
@@ -52,8 +47,9 @@ namespace Freengy.WebService.Modules
         private Response ValidateUserPassword(NancyContext nancyContext) 
         {
             logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
+            var realAccount = RegistrationService.Instance.FindByName(logInRequest.Account.Name);
 
-            bool isPasswordValid = RegistrationService.Instance.ValidatePassword(logInRequest.Account.Name, logInRequest.PasswordHash);
+            bool isPasswordValid = PasswordService.Instance.ValidatePassword(realAccount.Id, logInRequest.PasswordHash);
 
             if (!isPasswordValid)
             {
@@ -139,7 +135,7 @@ namespace Freengy.WebService.Modules
         private void InformFriendsAboutLogin(ComplexAccountState complexState) 
         {
             var userId = complexState.StateModel.Account.Id;
-            var friendships = FriendshipService.Instance.FindUserFriendships(userId);
+            var friendships = FriendshipService.Instance.FindByInvoker(userId);
 
             foreach (FriendshipModel friendship in friendships)
             {

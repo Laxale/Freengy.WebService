@@ -42,7 +42,19 @@ namespace Freengy.WebService.Models
 
         public override DbObject CreateFromProxy(DbObject dbProxy) 
         {
-            throw new InvalidOperationException("FFFUUUU");
+            var proxyModel = (FriendshipModel) dbProxy;
+
+            var realModel = new FriendshipModel
+            {
+                Id = proxyModel.Id,
+                AcceptorAccountId = proxyModel.AcceptorAccountId,
+                ParentId = proxyModel.ParentId,
+                //AcceptorAccount = proxyModel.AcceptorAccount,
+                //NavigationParent = proxyModel.NavigationParent,
+                Established = proxyModel.Established
+            };
+
+            return realModel;
         }
 
         /// <summary>

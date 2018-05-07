@@ -32,10 +32,7 @@ namespace Freengy.WebService.Services
         private static AccountDbInteracter instance;
 
 
-        private AccountDbInteracter() 
-        {
-
-        }
+        private AccountDbInteracter() { }
 
 
         /// <summary>

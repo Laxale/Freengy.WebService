@@ -66,10 +66,11 @@ namespace Freengy.WebService
         {
             new ServicesInitializer()
                 .Register(AccountDbInteracter.Instance)
+                .Register(RegistrationService.Instance)
                 .Register(AccountStateService.Instance)
                 .Register(FriendRequestService.Instance)
                 .Register(FriendshipService.Instance)
-                .Register(RegistrationService.Instance)
+                .Register(PasswordService.Instance)
                 .InitRegistered();
 
             "Initialized services".WriteToConsole();

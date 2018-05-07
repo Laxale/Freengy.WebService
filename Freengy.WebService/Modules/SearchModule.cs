@@ -80,45 +80,42 @@ namespace Freengy.WebService.Modules
             return responce;
         }
 
-        private dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper) 
+        private dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper)
         {
-            ComplexUserAccount senderAcc = RegistrationService.Instance.FindById(searchRequest.SenderId);
+            var registrationService = RegistrationService.Instance;
+            var friendService = FriendshipService.Instance;
+
+            ComplexUserAccount senderAcc = registrationService.FindById(searchRequest.SenderId);
 
             if (senderAcc == null)
             {
                 return $"Account id {searchRequest.SenderId} is not registered";
             }
 
-            UpdateFriendships(senderAcc);
+            friendService.UpdateFriendships(senderAcc);
 
             var stateService = AccountStateService.Instance;
 
             AccountStateModel AccountStateSelector(FriendshipModel friendship)
             {
-                ComplexUserAccount account = 
+                Guid friendId = 
                     friendship.AcceptorAccountId == searchRequest.SenderId ? 
-                        friendship.NavigationParent : 
-                        friendship.AcceptorAccount;
+                        friendship.ParentId : 
+                        friendship.AcceptorAccountId;
 
-                ComplexAccountState complexAccountState = stateService.GetStatusOf(account.Id);
-                if(complexAccountState == null) throw new InvalidOperationException($"Found null state pair for account id { account.Id }");
+                ComplexAccountState complexAccountState = stateService.GetStatusOf(friendId);
+                if(complexAccountState == null) throw new InvalidOperationException($"Found null state pair for account id { friendId }");
 
                 return complexAccountState.StateModel;
             }
 
-            var friends = senderAcc.Friendships.Select(AccountStateSelector);
+            IEnumerable<AccountStateModel> friendStateModels = senderAcc.Friendships.Select(AccountStateSelector);
 
-            var serialized = helper.Serialize(friends);
+            var serialized = helper.Serialize(friendStateModels);
 
             return serialized;
         }
 
-        private void UpdateFriendships(ComplexUserAccount account) 
-        {
-            IEnumerable<FriendshipModel> senderFriendships = FriendshipService.Instance.FindUserFriendships(account.Id);
 
-            account.Friendships.Clear();
-            account.Friendships.AddRange(senderFriendships);
-        }
     }
 }

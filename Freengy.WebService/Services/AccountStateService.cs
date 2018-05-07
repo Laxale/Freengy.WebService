@@ -36,7 +36,6 @@ namespace Freengy.WebService.Services
         private static readonly object Locker = new object();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-
         private static AccountStateService instance;
 
         private readonly List<ComplexAccountState> accountStates = new List<ComplexAccountState>();
@@ -68,21 +67,16 @@ namespace Freengy.WebService.Services
         {
             try
             {
-                using (var context = new ComplexUserContext())
+                foreach (ComplexUserAccount userAccount in RegistrationService.Instance.GetAllForInitialize())
                 {
-                    List<ComplexUserAccount> allUsers = context.Objects.ToList();
-
-                    foreach (ComplexUserAccount account in allUsers)
+                    var state = new AccountStateModel
                     {
-                        var state = new AccountStateModel
-                        {
-                            Account = account,
-                            Address = string.Empty,
-                            OnlineStatus = AccountOnlineStatus.Offline
-                        };
+                        Account = userAccount,
+                        Address = string.Empty,
+                        OnlineStatus = AccountOnlineStatus.Offline
+                    };
 
-                        accountStates.Add(new ComplexAccountState(state));
-                    }
+                    accountStates.Add(new ComplexAccountState(state));
                 }
 
                 StartUpdateCycle();
