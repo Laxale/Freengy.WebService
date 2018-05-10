@@ -321,7 +321,7 @@ namespace Freengy.WebService.Services
                         }
                         else
                         {
-                            responce = task.Result;
+                            responce = task.Result.Value;
                         }
                     })
                     .Wait();

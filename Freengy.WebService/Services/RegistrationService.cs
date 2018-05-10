@@ -87,7 +87,6 @@ namespace Freengy.WebService.Services
             {
                 try
                 {
-                    //var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == account.UniqueId);
                     ComplexUserAccount targetAcc = registeredAccounts.FirstOrDefault(acc => acc.Id == userId);
 
                     if(targetAcc == null) throw new InvalidOperationException($"Account '{ userId }' not found in cache");

@@ -75,12 +75,8 @@ namespace Freengy.WebService.Services
                 {
                     using (var dbContext = new ComplexUserContext())
                     {
-                        var storedAcc = 
-                            dbContext
-                                .Objects
-                                //.Include(acc => acc.Friendships)
-                                //.Include(acc => acc.FriendRequests)
-                                .FirstOrDefault(acc => acc.Id == account.Id);
+                        var storedAcc = dbContext.Objects.FirstOrDefault(acc => acc.Id == account.Id);
+
                         if (storedAcc == null)
                         {
                             dbContext.Objects.Add(account);
