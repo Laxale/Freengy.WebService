@@ -81,18 +81,19 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public void UpdateCache(ComplexUserAccount account) 
+        public void UpdateAccountProps(Guid userId, EditAccountModel editRequest) 
         {
             lock (Locker)
             {
                 try
                 {
                     //var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == account.UniqueId);
-                    var targetAcc = registeredAccounts.FirstOrDefault(acc => acc.Id == account.Id);
+                    ComplexUserAccount targetAcc = registeredAccounts.FirstOrDefault(acc => acc.Id == userId);
 
-                    if(targetAcc == null) throw new InvalidOperationException($"Account '{ account.Id }' not found in cache");
+                    if(targetAcc == null) throw new InvalidOperationException($"Account '{ userId }' not found in cache");
 
-                    AccountDbInteracter.TransferProperties(account, targetAcc);
+                    AccountDbInteracter.EditSimpleProperties(editRequest, targetAcc);
+                    AccountDbInteracter.Instance.AddOrUpdate(targetAcc);
                 }
                 catch (Exception ex)
                 {

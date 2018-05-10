@@ -106,10 +106,12 @@
     <Compile Include="Models\ComplexUserAccount.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
     <Compile Include="Models\Password.cs" />
+    <Compile Include="Modules\EditModule.cs" />
     <Compile Include="Modules\FriendRequestModule.cs" />
     <Compile Include="Modules\HelloModule.cs" />
     <Compile Include="Modules\RegisterUserModule.cs" />
     <Compile Include="Modules\SearchModule.cs" />
+    <Compile Include="Modules\SyncModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modules\LogInModule.cs" />

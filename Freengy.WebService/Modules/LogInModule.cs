@@ -93,15 +93,15 @@ namespace Freengy.WebService.Modules
 
         private string GetUserAddress(Request httpRequest) 
         {
-            IEnumerable<string> headerValue = httpRequest.Headers[FreengyHeaders.ClientAddressHeaderName];
+            IEnumerable<string> headerValue = httpRequest.Headers[FreengyHeaders.Client.ClientAddressHeaderName];
 
             return headerValue.First();
         }
 
         private void SetAuthHeaders(IDictionary<string, string> headers, SessionAuth auth) 
         {
-            headers.Add(FreengyHeaders.ClientAddressHeaderName, auth.ClientToken);
-            headers.Add(FreengyHeaders.ServerSessionTokenHeaderName, auth.ServerToken);
+            headers.Add(FreengyHeaders.Client.ClientAddressHeaderName, auth.ClientToken);
+            headers.Add(FreengyHeaders.Server.ServerSessionTokenHeaderName, auth.ServerToken);
         }
 
         private ComplexAccountState LogInOrOut(LoginModel logInRequest, string userAddress)

@@ -80,7 +80,7 @@ namespace Freengy.WebService.Modules
             return responce;
         }
 
-        private dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper)
+        private dynamic ProcessSearchFriends(SearchRequest searchRequest, SerializeHelper helper) 
         {
             var registrationService = RegistrationService.Instance;
             var friendService = FriendshipService.Instance;
@@ -115,7 +115,5 @@ namespace Freengy.WebService.Modules
 
             return serialized;
         }
-
-
     }
 }

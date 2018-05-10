@@ -61,7 +61,7 @@ namespace Freengy.WebService.Services
                 {
                     string targetFriendAddress = $"{friendAccountState.StateModel.Address}{Subroutes.NotifyClient.NotifyFriendState}";
                     actor.SetRequestAddress(targetFriendAddress);
-                    actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
+                    actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
 
                     var result = actor.PostAsync<AccountStateModel, AccountStateModel>(userState.StateModel).Result;
                 }
@@ -84,7 +84,7 @@ namespace Freengy.WebService.Services
                 {
                     string requesterAddress = $"{requesterState.StateModel.Address}{Subroutes.NotifyClient.NotifyFriendRequestState}";
                     actor.SetRequestAddress(requesterAddress);
-                    actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, requesterState.ClientAuth.ServerToken);
+                    actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, requesterState.ClientAuth.ServerToken);
 
                     var result = actor.PostAsync<FriendRequestReply, FriendRequestReply>(requestReply).Result;
 
@@ -107,7 +107,7 @@ namespace Freengy.WebService.Services
                 {
                     string requesterAddress = $"{ targetUserState.StateModel.Address }{ Subroutes.NotifyClient.NotifyFriendRequest }";
                     actor.SetRequestAddress(requesterAddress);
-                    actor.AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, targetUserState.ClientAuth.ServerToken);
+                    actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, targetUserState.ClientAuth.ServerToken);
 
                     var result = actor.PostAsync<FriendRequest, FriendRequest>(request).Result;
 

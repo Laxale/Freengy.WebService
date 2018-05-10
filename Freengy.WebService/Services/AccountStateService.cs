@@ -59,7 +59,6 @@ namespace Freengy.WebService.Services
         }
 
 
-        /// <inheritdoc />
         /// <summary>
         /// Initialize the service.
         /// </summary>
@@ -104,7 +103,7 @@ namespace Freengy.WebService.Services
             {
                 try
                 {
-                    var complexAccountState = accountStates.First(statePair => statePair.StateModel.Account.Id == userId);
+                    var complexAccountState = accountStates.First(state => state.StateModel.Account.Id == userId);
                     return complexAccountState;
                 }
                 catch (Exception ex)
@@ -286,7 +285,7 @@ namespace Freengy.WebService.Services
                 string address = $"{complexAccountState.StateModel.Address}{Subroutes.NotifyClient.RequestUserState}";
                 actor
                     .SetRequestAddress(address)
-                    .AddHeader(FreengyHeaders.ServerSessionTokenHeaderName, complexAccountState.ClientAuth.ServerToken);
+                    .AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, complexAccountState.ClientAuth.ServerToken);
 
                 HttpResponseMessage responce = null;
                 actor

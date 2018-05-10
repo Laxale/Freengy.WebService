@@ -3,8 +3,6 @@
 //
 
 
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-
 namespace Freengy.WebService 
 {
     /// <summary>
@@ -49,6 +47,35 @@ namespace Freengy.WebService
             public static readonly string SearchFriendRequests = $"{ Root }/friendrequest";
         }
 
+        /// <summary>
+        /// Contains edit entities subroutes.
+        /// </summary>
+        public static class Edit 
+        {
+            /// <summary>
+            /// Root Edit module subroute.
+            /// </summary>
+            public static readonly string Root = "/edit";
+
+            public static readonly string EditAccount = $"{Root}/account";
+
+            public static readonly string EditAccountName = $"{Root}/account/name";
+
+            public static readonly string EditAccountImage = $"{Root}/account/image";
+        }
+
+        /// <summary>
+        /// Contains synchronization requests subroutes.
+        /// </summary>
+        public static class Sync 
+        {
+            /// <summary>
+            /// Root Sync module subroute.
+            /// </summary>
+            public static readonly string Root = "/sync";
+
+            public static readonly string SyncAccount = $"{Root}/account";
+        }
 
         /// <summary>
         /// Contains request subroutes.

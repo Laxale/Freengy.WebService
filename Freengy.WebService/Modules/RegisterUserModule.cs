@@ -59,7 +59,7 @@ namespace Freengy.WebService.Modules
             if (registeredAcc != null)
             {
                 registrationRequest.CreatedAccount = registeredAcc.ToSimpleModel();
-                jsonResponce.Headers.Add(FreengyHeaders.NextPasswordSaltHeaderName, registeredAcc.PasswordData.NextLoginSalt);
+                jsonResponce.Headers.Add(FreengyHeaders.Server.NextPasswordSaltHeaderName, registeredAcc.PasswordData.NextLoginSalt);
             }
 
             return jsonResponce;

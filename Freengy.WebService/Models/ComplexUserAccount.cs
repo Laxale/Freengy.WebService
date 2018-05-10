@@ -11,6 +11,7 @@ using Freengy.Common.Database;
 using Freengy.Common.Models;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
+using Freengy.WebService.Helpers;
 
 using Newtonsoft.Json;
 
@@ -22,6 +23,11 @@ namespace Freengy.WebService.Models
     /// </summary>
     internal class ComplexUserAccount : UserAccountModel 
     {
+        public ComplexUserAccount() 
+        {
+            $"Fuk me".WriteToConsole();
+        }
+
         /// <summary>
         /// Bullshit collection to workaround problems with 1-to-1 relation 'user-password'.
         /// в связи с дикими проблемами наладить отношение один-к-одному пришлось вхерачить коллекцию.

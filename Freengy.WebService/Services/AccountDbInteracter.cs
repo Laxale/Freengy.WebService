@@ -18,9 +18,6 @@ using NLog;
 
 namespace Freengy.WebService.Services 
 {
-    using System.Data.Entity;
-
-
     /// <summary>
     /// Interacts user accounts data with database.
     /// </summary>
@@ -50,7 +47,6 @@ namespace Freengy.WebService.Services
         }
 
 
-        /// <inheritdoc />
         /// <summary>
         /// Initialize the service.
         /// </summary>
@@ -58,12 +54,7 @@ namespace Freengy.WebService.Services
         {
             try
             {
-                using (var dbContext = new ComplexUserContext())
-                {
-                    ComplexUserAccount storedAcc = dbContext.Objects.FirstOrDefault();
-
-                    var test = storedAcc?.Id;
-                }
+                var allAccs = RegistrationService.Instance.GetAllForInitialize();
             }
             catch (Exception ex)
             {
@@ -97,7 +88,7 @@ namespace Freengy.WebService.Services
                         }
                         else
                         {
-                            TransferProperties(account, storedAcc);
+                            TransferAllProperties(account, storedAcc);
                             storedAcc.PrepareMappedProps();
 
                             $"Updated account '{ account.Name }'".WriteToConsole();
@@ -116,15 +107,12 @@ namespace Freengy.WebService.Services
         }
 
 
-        public static void TransferProperties(ComplexUserAccount from, ComplexUserAccount to) 
+        public static void TransferAllProperties(ComplexUserAccount from, ComplexUserAccount to) 
         {
             if(to.Id != from.Id) throw new InvalidOperationException("Id mismatch");
             //if(to.UniqueId != from.UniqueId) throw new InvalidOperationException("Unique id mismatch");
 
-            to.Name = from.Name;
-            to.Level = from.Level;
-            to.Privilege = from.Privilege;
-            to.LastLogInTime = from.LastLogInTime;
+            TransferSimpleProperties(from, to);
 
             //to.Friendships = from.Friendships;
             to.Friendships.Clear();
@@ -133,6 +121,19 @@ namespace Freengy.WebService.Services
             //to.FriendRequests= from.FriendRequests;
             to.FriendRequests.Clear();
             from.FriendRequests.ForEach(to.FriendRequests.Add);
+        }
+
+        public static void TransferSimpleProperties(UserAccountModel fromSimple, UserAccountModel toSimple) 
+        {
+            toSimple.Name = fromSimple.Name;
+            toSimple.Level = fromSimple.Level;
+            toSimple.Privilege = fromSimple.Privilege;
+            toSimple.LastLogInTime = fromSimple.LastLogInTime;
+        }
+
+        public static void EditSimpleProperties(EditAccountModel editRequest, UserAccountModel targetModel) 
+        {
+            targetModel.Name = editRequest.NewName;
         }
     }
 }

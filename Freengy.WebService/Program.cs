@@ -65,8 +65,8 @@ namespace Freengy.WebService
         private static void InitServices() 
         {
             new ServicesInitializer()
-                .Register(AccountDbInteracter.Instance)
                 .Register(RegistrationService.Instance)
+                .Register(AccountDbInteracter.Instance)
                 .Register(AccountStateService.Instance)
                 .Register(FriendRequestService.Instance)
                 .Register(FriendshipService.Instance)
