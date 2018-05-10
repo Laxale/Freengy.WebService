@@ -115,6 +115,27 @@ namespace Freengy.WebService.Services
         }
 
         /// <summary>
+        /// TODO for unknown reason state cache is not updated when account model is updated in RegistrationService. 
+        /// TODO Though state cache holds references directly to RegistrationService objects.
+        /// </summary>
+        /// <param name="model"></param>
+        public void UpdateAccountCache(UserAccountModel model) 
+        {
+            lock (Locker)
+            {
+                try
+                {
+                    var complexAccountState = accountStates.First(state => state.StateModel.Account.Id == model.Id);
+                    complexAccountState.StateModel.Account = model;
+                }
+                catch (Exception ex)
+                {
+                    ex.Message.WriteToConsole();
+                }
+            }
+        }
+
+        /// <summary>
         /// Check if user is authorized.
         /// </summary>
         /// <param name="requesterId">Target use identifier.</param>

@@ -94,6 +94,8 @@ namespace Freengy.WebService.Services
 
                     AccountDbInteracter.EditSimpleProperties(editRequest, targetAcc);
                     AccountDbInteracter.Instance.AddOrUpdate(targetAcc);
+
+                    AccountStateService.Instance.UpdateAccountCache(targetAcc);
                 }
                 catch (Exception ex)
                 {
