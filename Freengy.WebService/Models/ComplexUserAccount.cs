@@ -25,7 +25,7 @@ namespace Freengy.WebService.Models
     {
         public ComplexUserAccount() 
         {
-            $"Fuk me".WriteToConsole();
+            $"Account object created".WriteToConsole(ConsoleColor.Cyan);
         }
 
         /// <summary>

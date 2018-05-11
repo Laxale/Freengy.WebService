@@ -3,8 +3,10 @@
 //
 
 using System;
-
+using Freengy.Common.Enums;
 using Freengy.Common.Models;
+
+using Freengy.WebService.Extensions;
 
 
 namespace Freengy.WebService.Models 
@@ -16,7 +18,14 @@ namespace Freengy.WebService.Models
     {
         public ComplexAccountState(AccountStateModel stateModel) 
         {
-            StateModel = stateModel ?? throw new ArgumentNullException(nameof(stateModel));
+            //StateModel = stateModel ?? throw new ArgumentNullException(nameof(stateModel));
+            Address = stateModel?.Address ?? throw new ArgumentNullException(nameof(stateModel));
+            OnlineStatus = stateModel.OnlineStatus;
+
+            ComplexAccount = 
+                stateModel.AccountModel is ComplexUserAccount complexAcc ? 
+                    complexAcc :
+                    stateModel.AccountModel.ToComplex();
         }
 
 
@@ -28,7 +37,24 @@ namespace Freengy.WebService.Models
         /// <summary>
         /// Gets client account state model.
         /// </summary>
-        public AccountStateModel StateModel { get; }
+        //public AccountStateModel StateModel { get; }
+
+        /// <summary>
+        /// Возвращает ссылку на сложную модель аккаунта.
+        /// </summary>
+        public ComplexUserAccount ComplexAccount { get; }
+
+        /// <summary>
+        /// Текущий адрес пользователя.
+        /// </summary>
+        public string Address { get; set; }
+
+        //public UserAccountModel AccountModel { get; set; }
+
+        /// <summary>
+        /// Текущий онлайн-статус пользователя.
+        /// </summary>
+        public AccountOnlineStatus OnlineStatus { get; set; }
 
         /// <summary>
         /// Gets client auth model.

@@ -50,18 +50,7 @@ namespace Freengy.WebService.Services
         /// <summary>
         /// Initialize the service.
         /// </summary>
-        public void Initialize() 
-        {
-            try
-            {
-                var allAccs = RegistrationService.Instance.GetAllForInitialize();
-            }
-            catch (Exception ex)
-            {
-                ex.Message.WriteToConsole(ConsoleColor.Red);
-                logger.Error(ex, $"Failed to initialize { nameof(AccountDbInteracter) } service");
-            }
-        }
+        public void Initialize() { }
 
         /// <summary>
         /// Add new or update already registered account in database.
@@ -125,11 +114,6 @@ namespace Freengy.WebService.Services
             toSimple.Level = fromSimple.Level;
             toSimple.Privilege = fromSimple.Privilege;
             toSimple.LastLogInTime = fromSimple.LastLogInTime;
-        }
-
-        public static void EditSimpleProperties(EditAccountModel editRequest, UserAccountModel targetModel) 
-        {
-            targetModel.Name = editRequest.NewName;
         }
     }
 }

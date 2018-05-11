@@ -95,9 +95,11 @@
     <Compile Include="Context\FriendshipContext.cs" />
     <Compile Include="Context\PasswordContext.cs" />
     <Compile Include="Exceptions\ClientNotAuthorizedException.cs" />
+    <Compile Include="Exceptions\UserNotFoundException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
     <Compile Include="Extensions\AccountExtensions.cs" />
     <Compile Include="Extensions\HttpHeaderExtensions.cs" />
+    <Compile Include="Extensions\StateExtensions.cs" />
     <Compile Include="Helpers\FriendshipComparer.cs" />
     <Compile Include="Helpers\WriterExtensions.cs" />
     <Compile Include="Interfaces\IService.cs" />

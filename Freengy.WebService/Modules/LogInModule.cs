@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Freengy.Common.Constants;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
@@ -46,6 +46,11 @@ namespace Freengy.WebService.Modules
             logInRequest = new SerializeHelper().DeserializeObject<LoginModel>(Request.Body);
             var realAccount = RegistrationService.Instance.FindByName(logInRequest.Account.Name);
 
+            if (realAccount == null)
+            {
+                return HttpStatusCode.Unauthorized;
+            }
+
             bool isPasswordValid = PasswordService.Instance.ValidatePassword(realAccount.Id, logInRequest.PasswordHash);
 
             if (!isPasswordValid)
@@ -76,14 +81,11 @@ namespace Freengy.WebService.Modules
 
             ComplexAccountState accountState = LogInOrOut(logInRequest, userAddress);
             
-            $"'{ logInRequest.Account.Name } [{ userAddress }]' log { direction } result: { accountState.StateModel.OnlineStatus }".WriteToConsole();
+            $"'{ logInRequest.Account.Name } [{ userAddress }]' log { direction } result: { accountState.OnlineStatus }".WriteToConsole();
 
             // сложный аккаунт нужно упростить, иначе при дефолтной сериализации получается бесконечная рекурсия ссылающихся друг на друга свойств
-            if (accountState.StateModel.Account is ComplexUserAccount complexAcc)
-            {
-                accountState.StateModel.Account = complexAcc.ToSimpleModel();
-            }
-            var jsonResponse = new JsonResponse<AccountStateModel>(accountState.StateModel, new DefaultJsonSerializer());
+            
+            var jsonResponse = new JsonResponse<AccountStateModel>(accountState.ToSimple(), new DefaultJsonSerializer());
             SetAuthHeaders(jsonResponse.Headers, accountState.ClientAuth);
 
             $"Logged '{ logInRequest.Account.Name }' { direction }".WriteToConsole(isLoggingIn ? ConsoleColor.Green : ConsoleColor.Magenta);
@@ -110,36 +112,17 @@ namespace Freengy.WebService.Modules
             var stateService = AccountStateService.Instance;
             var targetStatus = isLoggingIn ? AccountOnlineStatus.Online : AccountOnlineStatus.Offline;
 
-            ComplexAccountState complexAccountState;
-            if (isLoggingIn)
-            {
-                complexAccountState = stateService.LogIn(logInRequest.Account.Name, userAddress);
-            }
-            else
-            {
-                var stateModel = stateService.LogOut(logInRequest.Account.Name);
-                complexAccountState = new ComplexAccountState(stateModel);
-            }
+            ComplexAccountState complexAccountState = 
+                isLoggingIn ? 
+                    stateService.LogIn(logInRequest.Account.Name, userAddress) : 
+                    stateService.LogOut(logInRequest.Account.Name);
 
-            if (complexAccountState.StateModel.OnlineStatus == targetStatus)
+            if (complexAccountState.OnlineStatus == targetStatus)
             {
-                InformFriendsAboutLogin(complexAccountState);
+                Task.Run(() => UserInformerService.Instance.NotifyAllFriendsAboutUser(complexAccountState));
             }
 
             return complexAccountState;
-        }
-
-        private void InformFriendsAboutLogin(ComplexAccountState complexState) 
-        {
-            var informer = UserInformerService.Instance;
-            Guid userId = complexState.StateModel.Account.Id;
-            IEnumerable<FriendshipModel> friendships = FriendshipService.Instance.FindAllFriendships(userId);
-
-            foreach (FriendshipModel friendship in friendships)
-            {
-                Guid friendId = friendship.AcceptorAccountId == userId ? friendship.ParentId : friendship.AcceptorAccountId;
-                informer.NotifyFriendAboutLogin(friendId, complexState);
-            }
         }
     }
 }

@@ -34,7 +34,8 @@ namespace Freengy.WebService.Services
         private static RegistrationService instance;
 
         private readonly PasswordService passwordService = PasswordService.Instance;
-        private readonly List<ComplexUserAccount> registeredAccounts = new List<ComplexUserAccount>();
+        private readonly AccountStateService stateService = AccountStateService.Instance;
+        //private readonly List<ComplexUserAccount> registeredAccounts = new List<ComplexUserAccount>();
 
 
         private RegistrationService() { }
@@ -62,14 +63,14 @@ namespace Freengy.WebService.Services
         {
             try
             {
-                using (var dbContext = new ComplexUserContext())
-                {
-                    List<ComplexUserAccount> accounts = dbContext.Objects.ToList();
+                //using (var dbContext = new ComplexUserContext())
+                //{
+                  //  List<ComplexUserAccount> accounts = dbContext.Objects.ToList();
 
-                    registeredAccounts.AddRange(accounts);
-                }
+                    //registeredAccounts.AddRange(accounts);
+                //}
 
-                $"Cached {registeredAccounts.Count} accounts".WriteToConsole();
+                //$"Cached {registeredAccounts.Count} accounts".WriteToConsole();
 
                 logger.Info($"Initialized {nameof(RegistrationService)}");
             }
@@ -78,28 +79,6 @@ namespace Freengy.WebService.Services
                 ex.Message.WriteToConsole(ConsoleColor.Red);
                 logger.Error($"Failed to initialize {nameof(RegistrationService)}");
                 throw;
-            }
-        }
-
-        public void UpdateAccountProps(Guid userId, EditAccountModel editRequest) 
-        {
-            lock (Locker)
-            {
-                try
-                {
-                    ComplexUserAccount targetAcc = registeredAccounts.FirstOrDefault(acc => acc.Id == userId);
-
-                    if(targetAcc == null) throw new InvalidOperationException($"Account '{ userId }' not found in cache");
-
-                    AccountDbInteracter.EditSimpleProperties(editRequest, targetAcc);
-                    AccountDbInteracter.Instance.AddOrUpdate(targetAcc);
-
-                    AccountStateService.Instance.UpdateAccountCache(targetAcc);
-                }
-                catch (Exception ex)
-                {
-                    ex.Message.WriteToConsole(ConsoleColor.Red);
-                }
             }
         }
 
@@ -133,61 +112,28 @@ namespace Freengy.WebService.Services
 
         public ComplexUserAccount FindById(Guid userId) 
         {
-            lock (Locker)
-            {
-                //ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.UniqueId == userId);
-                ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Id == userId);
+            var foundUser = stateService.GetStatusOf(userId)?.ComplexAccount;
 
-                return foundUser;
-            }
+            return foundUser;
         }
 
         public ComplexUserAccount FindByName(string userName) 
         {
             if (string.IsNullOrWhiteSpace(userName)) throw new ArgumentNullException(nameof(userName));
 
-            lock (Locker)
-            {
-                ComplexUserAccount foundUser = registeredAccounts.FirstOrDefault(acc => acc.Name == userName);
+            var foundUser = stateService.GetStatusOf(userName)?.ComplexAccount;
 
-                return foundUser;
-            }
+            return foundUser;
         }
 
         public IEnumerable<ComplexUserAccount> FindByNameFilter(string nameFilter) 
         {
             if (string.IsNullOrWhiteSpace(nameFilter)) return new List<ComplexUserAccount>();
 
-            lock (Locker)
-            {
-                Func<ComplexUserAccount, bool> selector;
-                if(string.IsNullOrWhiteSpace(nameFilter))
-                {
-                    selector = acc => true;
-                }
-                else
-                {
-                    selector = acc =>
-                    {
-                        if (acc.Name.Contains(nameFilter))
-                        {
-                            return true;
-                        }
+            IEnumerable<ComplexAccountState> filteredStates = stateService.GetByNameFilter(nameFilter);
+            IEnumerable<ComplexUserAccount> filteredAccounts = filteredStates.Select(state => state.ComplexAccount);
 
-                        return false;
-                    };
-                }
-
-                IEnumerable<ComplexUserAccount> foundUsers = registeredAccounts.Where(selector);
-                
-                return foundUsers;
-            }
-        }
-
-
-        internal IEnumerable<ComplexUserAccount> GetAllForInitialize() 
-        {
-            return registeredAccounts;
+            return filteredAccounts;
         }
 
 
@@ -207,7 +153,7 @@ namespace Freengy.WebService.Services
 
                     AccountDbInteracter.Instance.AddOrUpdate(trimmedComplexAcc);
 
-                    registeredAccounts.Add(trimmedComplexAcc);
+                    stateService.RegisterNewUserState(trimmedComplexAcc);
                     passwordService.SavePassword(newAccount.PasswordDatas[0], false);
 
                     registeredAcc = trimmedComplexAcc;

@@ -3,11 +3,15 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Freengy.Common.Constants;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Interfaces;
 using Freengy.Common.Models;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
 using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
@@ -46,26 +50,45 @@ namespace Freengy.WebService.Services
         public void Initialize() { }
 
         /// <summary>
-        /// Send informing message to a friend about user login.
+        /// Send informing message to a friend about user account state change.
         /// </summary>
         /// <param name="userState"></param>
         /// <param name="friendId"></param>
-        public void NotifyFriendAboutLogin(Guid friendId, ComplexAccountState userState) 
+        public void NotifyFriendAboutUserChange(Guid friendId, ComplexAccountState userState) 
         {
             ComplexAccountState friendAccountState = AccountStateService.Instance.GetStatusOf(friendId);
             if (friendAccountState == null) throw new InvalidOperationException($"Got null friend state");
 
-            if (friendAccountState.StateModel.OnlineStatus == AccountOnlineStatus.Online)
+            if (friendAccountState.OnlineStatus == AccountOnlineStatus.Online)
             {
-                using (IHttpActor actor = new HttpActor())
-                {
-                    string targetFriendAddress = $"{friendAccountState.StateModel.Address}{Subroutes.NotifyClient.NotifyFriendState}";
-                    actor.SetRequestAddress(targetFriendAddress);
-                    actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
-
-                    var result = actor.PostAsync<AccountStateModel, AccountStateModel>(userState.StateModel).Result;
-                }
+                NotifyFriendAboutUser(userState, friendAccountState);
             }
+        }
+
+        /// <summary>
+        /// Отправить уведомления всем друзьям юзера о любом изменении состояния его аккаунта.
+        /// </summary>
+        /// <param name="userState">Модель состояния аккаунта юзера.</param>
+        public void NotifyAllFriendsAboutUser(ComplexAccountState userState) 
+        {
+            var outFriendIds = 
+                FriendshipService.Instance.FindByInvoker(userState.ComplexAccount.Id)
+                .Select(friendship => friendship.AcceptorAccountId);
+
+            var inFriendIds =
+                FriendshipService.Instance.FindByAcceptor(userState.ComplexAccount.Id)
+                    .Select(friendship => friendship.ParentId);
+
+            var allFriendIds = inFriendIds.Union(outFriendIds);
+            IEnumerable<ComplexAccountState> allFriendStates = allFriendIds.Select(friendId => AccountStateService.Instance.GetStatusOf(friendId));
+
+            Parallel.ForEach(allFriendStates, friendState =>
+            {
+                if (friendState.OnlineStatus == AccountOnlineStatus.Online)
+                {
+                    NotifyFriendAboutUser(userState, friendState);
+                }
+            });
         }
 
         /// <summary>
@@ -78,11 +101,11 @@ namespace Freengy.WebService.Services
             ComplexAccountState requesterState = AccountStateService.Instance.GetStatusOf(requesterId);
             if (requesterState == null) throw new InvalidOperationException($"Got null requester state");
 
-            if (requesterState.StateModel.OnlineStatus == AccountOnlineStatus.Online)
+            if (requesterState.OnlineStatus == AccountOnlineStatus.Online)
             {
                 using (IHttpActor actor = new HttpActor())
                 {
-                    string requesterAddress = $"{requesterState.StateModel.Address}{Subroutes.NotifyClient.NotifyFriendRequestState}";
+                    string requesterAddress = $"{requesterState.Address}{Subroutes.NotifyClient.NotifyFriendRequestState}";
                     actor.SetRequestAddress(requesterAddress);
                     actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, requesterState.ClientAuth.ServerToken);
 
@@ -90,22 +113,27 @@ namespace Freengy.WebService.Services
 
                     string resultMessage = result.Success ? "Success" : result.Error.Message;
 
-                    $"Sent friendrequest reply '{ requestReply.Reaction }' to { requesterState.StateModel.Account.Name }:{ Environment.NewLine }    { resultMessage }"
+                    $"Sent friendrequest reply '{ requestReply.Reaction }' to { requesterState.ComplexAccount.Name }:{ Environment.NewLine }    { resultMessage }"
                         .WriteToConsole(ConsoleColor.Blue);
                 }
             }
         }
 
+        /// <summary>
+        /// Сообщить пользователю о новом запросе в друзья.
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя, которому поступил запрос в друзья.</param>
+        /// <param name="request">Поступивший запрос в друзья.</param>
         public void NotifyUserAboutFriendRequest(Guid userId, FriendRequest request) 
         {
             ComplexAccountState targetUserState = AccountStateService.Instance.GetStatusOf(userId);
             if (targetUserState == null) throw new InvalidOperationException($"Got null target user state");
 
-            if (targetUserState.StateModel.OnlineStatus == AccountOnlineStatus.Online)
+            if (targetUserState.OnlineStatus == AccountOnlineStatus.Online)
             {
                 using (IHttpActor actor = new HttpActor())
                 {
-                    string requesterAddress = $"{ targetUserState.StateModel.Address }{ Subroutes.NotifyClient.NotifyFriendRequest }";
+                    string requesterAddress = $"{ targetUserState.Address }{ Subroutes.NotifyClient.NotifyFriendRequest }";
                     actor.SetRequestAddress(requesterAddress);
                     actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, targetUserState.ClientAuth.ServerToken);
 
@@ -119,6 +147,19 @@ namespace Freengy.WebService.Services
                     )
                     .WriteToConsole(ConsoleColor.DarkBlue);
                 }
+            }
+        }
+
+
+        private static void NotifyFriendAboutUser(ComplexAccountState userState, ComplexAccountState friendAccountState) 
+        {
+            using (IHttpActor actor = new HttpActor())
+            {
+                string targetFriendAddress = $"{friendAccountState.Address}{Subroutes.NotifyClient.NotifyFriendState}";
+                actor.SetRequestAddress(targetFriendAddress);
+                actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, friendAccountState.ClientAuth.ServerToken);
+
+                var result = actor.PostAsync<AccountStateModel, AccountStateModel>(userState.ToSimple()).Result;
             }
         }
     }

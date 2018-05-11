@@ -45,9 +45,9 @@ namespace Freengy.WebService.Modules
                 return HttpStatusCode.Forbidden;
             }
 
-            ComplexAccountState editedAccount = stateService.GetStatusOf(senderId);
+            //ComplexAccountState editedAccount = stateService.GetStatusOf(senderId);
             //editedAccount.StateModel.
-            RegistrationService.Instance.UpdateAccountProps(senderId, editRequest);
+            stateService.EditAccountProps(senderId, editRequest);
 
             return HttpStatusCode.Accepted;
         }

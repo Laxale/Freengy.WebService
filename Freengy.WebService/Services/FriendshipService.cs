@@ -115,7 +115,7 @@ namespace Freengy.WebService.Services
         }
 
         /// <summary>
-        /// FInd all friendship relations of a given user.
+        /// Find all friendship relations of a given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>

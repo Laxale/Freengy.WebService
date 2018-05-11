@@ -9,6 +9,7 @@ using System.Linq;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
 using Freengy.Common.Models;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
@@ -106,7 +107,7 @@ namespace Freengy.WebService.Modules
                 ComplexAccountState complexAccountState = stateService.GetStatusOf(friendId);
                 if(complexAccountState == null) throw new InvalidOperationException($"Found null state pair for account id { friendId }");
 
-                return complexAccountState.StateModel;
+                return complexAccountState.ToSimple();
             }
 
             IEnumerable<AccountStateModel> friendStateModels = senderAcc.Friendships.Select(AccountStateSelector);

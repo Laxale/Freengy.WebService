@@ -8,6 +8,7 @@ using Freengy.Common.Constants;
 using Freengy.Common.Extensions;
 using Freengy.Common.Models;
 using Freengy.WebService.Exceptions;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Models;
 using Freengy.WebService.Services;
 
@@ -42,7 +43,7 @@ namespace Freengy.WebService.Modules
 
             ComplexAccountState currentState = AccountStateService.Instance.GetStatusOf(senderId);
 
-            var responce = new JsonResponse<AccountStateModel>(currentState.StateModel, new DefaultJsonSerializer());
+            var responce = new JsonResponse<AccountStateModel>(currentState.ToSimple(), new DefaultJsonSerializer());
             responce.Headers.Add(FreengyHeaders.Server.ServerSessionTokenHeaderName, currentState.ClientAuth.ServerToken);
 
             return responce;
