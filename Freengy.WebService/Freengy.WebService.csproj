@@ -119,6 +119,7 @@
     <Compile Include="Modules\LogInModule.cs" />
     <Compile Include="Services\AccountDbInteracter.cs" />
     <Compile Include="Services\AccountStateService.cs" />
+    <Compile Include="Services\ExpirienceService.cs" />
     <Compile Include="Services\FriendRequestService.cs" />
     <Compile Include="Services\FriendshipService.cs" />
     <Compile Include="Services\PasswordService.cs" />

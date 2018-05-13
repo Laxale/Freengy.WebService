@@ -72,6 +72,7 @@ namespace Freengy.WebService
                 .Register(FriendshipService.Instance)
                 .Register(PasswordService.Instance)
                 .Register(UserInformerService.Instance)
+                .Register(ExpirienceService.Instance)
                 .InitRegistered();
 
             "Initialized services".WriteToConsole();

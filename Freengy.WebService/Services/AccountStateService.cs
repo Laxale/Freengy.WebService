@@ -239,6 +239,15 @@ namespace Freengy.WebService.Services
             return accountStates.Where(state => state.ComplexAccount.Name.ToLowerInvariant().Contains(filter));
         }
 
+        internal IEnumerable<ComplexAccountState> GetAllOnline() 
+        {
+            return accountStates.Where(
+                state => state.OnlineStatus == AccountOnlineStatus.Online ||
+                         state.OnlineStatus == AccountOnlineStatus.Afk ||
+                         state.OnlineStatus == AccountOnlineStatus.Busy ||
+                         state.OnlineStatus == AccountOnlineStatus.DoNotDisturb);
+        }
+
 
         private ComplexAccountState CacheNewState(UserAccountModel accountModel, string address) 
         {

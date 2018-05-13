@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Freengy.Common.Constants;
 using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
@@ -48,6 +49,19 @@ namespace Freengy.WebService.Services
         /// Initialize the service.
         /// </summary>
         public void Initialize() { }
+
+        public void NotifyUserOfExpAddition(ComplexAccountState userState, uint expAmount) 
+        {
+            using (IHttpActor actor = new HttpActor())
+            {
+                //TODO добавить начисление экспы
+                string address = $"{userState.Address}{Subroutes.NotifyClient.}";
+                actor.SetRequestAddress(address);
+                actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, userState.ClientAuth.ServerToken);
+
+                var result = actor.PostAsync<, >(userState.ToSimple()).Result;
+            }
+        }
 
         /// <summary>
         /// Send informing message to a friend about user account state change.
