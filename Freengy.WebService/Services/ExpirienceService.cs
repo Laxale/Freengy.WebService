@@ -5,8 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Freengy.Common.Enums;
 using Freengy.Common.Helpers;
+using Freengy.Common.Models;
 using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
 
@@ -22,7 +23,7 @@ namespace Freengy.WebService.Services
 
         private static ExpirienceService instance;
 
-        private readonly int expAdditionTimeout = 300000;
+        private readonly int expAdditionTimeout = 6000;
         private readonly DelayedEventInvoker delayedInvoker;
         private readonly AccountStateService stateService = AccountStateService.Instance;
         private readonly UserInformerService informerService = UserInformerService.Instance;
@@ -64,10 +65,34 @@ namespace Freengy.WebService.Services
 
             Parallel.ForEach(onlineStates, state =>
             {
-                informerService.NotifyUserOfExpAddition();
+                uint userPreviousLevel = state.ComplexAccount.Level;
+                GainExpModel model = CalculateExpForAccount(state.ComplexAccount.Level);
+                state.ComplexAccount.AddExp(model.Amount);
+                informerService.NotifyUserOfExpAddition(state, model);
+                
+                uint userNewLevel = ExpirienceCalculator.GetLevelForExp((uint) state.ComplexAccount.Expirience);
+                if (userNewLevel > userPreviousLevel)
+                {
+                    Task.Run(() => informerService.NotifyAllFriendsAboutUser(state));
+                }
             });
 
+            stateService.FlushStates();
+
             delayedInvoker.RequestDelayedEvent();
+        }
+
+        private GainExpModel CalculateExpForAccount(uint level) 
+        {
+            uint expAmount = ExpirienceCalculator.GetOnlineRewardForLevel(level);
+            var expModel = new GainExpModel
+            {
+                Amount = 418,
+                GainReason = GainExpReason.Online,
+                TimeStamp = DateTime.Now
+            };
+
+            return expModel;
         }
     }
 }

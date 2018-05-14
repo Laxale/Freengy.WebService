@@ -112,6 +112,8 @@ namespace Freengy.WebService
 
             public static readonly string Root = "fromserver";
 
+            public static readonly string SyncExp = $"{ Root }/{ inform }/exp";
+
             public static readonly string NotifyFriendState = $"{Root}/{inform}/friend/state";
 
             public static readonly string RequestUserState = $"{Root}/replystate";

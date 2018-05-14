@@ -50,16 +50,19 @@ namespace Freengy.WebService.Services
         /// </summary>
         public void Initialize() { }
 
-        public void NotifyUserOfExpAddition(ComplexAccountState userState, uint expAmount) 
+        public void NotifyUserOfExpAddition(ComplexAccountState userState, GainExpModel expModel) 
         {
             using (IHttpActor actor = new HttpActor())
             {
                 //TODO добавить начисление экспы
-                string address = $"{userState.Address}{Subroutes.NotifyClient.}";
+                string address = $"{userState.Address}{Subroutes.NotifyClient.SyncExp}";
                 actor.SetRequestAddress(address);
                 actor.AddHeader(FreengyHeaders.Server.ServerSessionTokenHeaderName, userState.ClientAuth.ServerToken);
 
-                var result = actor.PostAsync<, >(userState.ToSimple()).Result;
+                $"Giving { expModel.Amount } exp to { userState.ComplexAccount.Name } for { expModel.GainReason }"
+                    .WriteToConsole(ConsoleColor.Yellow);
+
+                var result = actor.PostAsync<GainExpModel, GainExpModel>(expModel).Result;
             }
         }
 

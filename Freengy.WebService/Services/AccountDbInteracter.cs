@@ -108,12 +108,12 @@ namespace Freengy.WebService.Services
             from.FriendRequests.ForEach(to.FriendRequests.Add);
         }
 
-        public static void TransferSimpleProperties(UserAccountModel fromSimple, UserAccountModel toSimple) 
+        public static void TransferSimpleProperties(UserAccountModel from, UserAccountModel to) 
         {
-            toSimple.Name = fromSimple.Name;
-            toSimple.Level = fromSimple.Level;
-            toSimple.Privilege = fromSimple.Privilege;
-            toSimple.LastLogInTime = fromSimple.LastLogInTime;
+            to.Name = from.Name;
+            to.Expirience = from.Expirience;
+            to.Privilege = from.Privilege;
+            to.LastLogInTime = from.LastLogInTime;
         }
     }
 }

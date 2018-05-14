@@ -55,8 +55,13 @@ namespace Freengy.WebService.Models
         [JsonIgnore]
         public List<ComplexFriendRequest> FriendRequests { get; set; } = new List<ComplexFriendRequest>();
 
+
+        public void AddExp(uint amount) 
+        {
+            Expirience += (int)amount;
+        }
+
         
-        /// <inheritdoc />
         public override string ToString() 
         {
             return $"{Name} [Level {Level} {Privilege}]";

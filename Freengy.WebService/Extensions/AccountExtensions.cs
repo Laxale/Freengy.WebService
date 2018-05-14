@@ -18,7 +18,7 @@ namespace Freengy.WebService.Extensions
                 Id = complexAccount.Id,
                 Name = complexAccount.Name,
                 RegistrationTime = complexAccount.RegistrationTime,
-                Level = complexAccount.Level,
+                Expirience = complexAccount.Expirience,
                 Privilege = complexAccount.Privilege
             };
 
@@ -51,7 +51,7 @@ namespace Freengy.WebService.Extensions
                 Name = otherAccount.Name,
                 LastLogInTime = otherAccount.LastLogInTime,
                 Privilege = otherAccount.Privilege,
-                Level = otherAccount.Level,
+                Expirience = otherAccount.Expirience,
                 RegistrationTime = otherAccount.RegistrationTime,
             };
             return complex;

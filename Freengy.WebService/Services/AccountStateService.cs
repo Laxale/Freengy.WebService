@@ -210,6 +210,13 @@ namespace Freengy.WebService.Services
             }
         }
 
+        internal void FlushStates() 
+        {
+            foreach (ComplexAccountState state in accountStates)
+            {
+                AccountDbInteracter.Instance.AddOrUpdate(state.ComplexAccount);
+            }
+        }
 
         internal void RegisterNewUserState(ComplexUserAccount newUserAccount) 
         {
@@ -249,7 +256,7 @@ namespace Freengy.WebService.Services
         }
 
 
-        private ComplexAccountState CacheNewState(UserAccountModel accountModel, string address) 
+        private void CacheNewState(UserAccountModel accountModel, string address) 
         {
             accountModel.LastLogInTime = DateTime.Now;
 
@@ -257,15 +264,13 @@ namespace Freengy.WebService.Services
             {
                 Address = address,
                 AccountModel = accountModel,
-                OnlineStatus = AccountOnlineStatus.Online
+                OnlineStatus = AccountOnlineStatus.Offline
             };
             
             var complexState = new ComplexAccountState(newState);
             complexState.ClientAuth.ClientToken = CreateNewToken();
             complexState.ClientAuth.ServerToken = CreateNewToken();
             accountStates.Add(complexState);
-
-            return complexState;
         }
 
         private string CreateNewToken() 
