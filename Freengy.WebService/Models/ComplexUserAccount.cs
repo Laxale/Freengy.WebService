@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using Freengy.Common.Database;
 using Freengy.Common.Models;
+using Freengy.Common.Models.Avatar;
 using Freengy.WebService.Context;
 using Freengy.WebService.Extensions;
 using Freengy.WebService.Helpers;
@@ -35,6 +36,14 @@ namespace Freengy.WebService.Models
         /// </summary>
         [JsonIgnore]
         public virtual List<Password> PasswordDatas { get; set; } = new List<Password>();
+
+        /// <summary>
+        /// Bullshit collection to workaround problems with 1-to-1 relation 'user-avatar'.
+        /// в связи с дикими проблемами наладить отношение один-к-одному пришлось вхерачить коллекцию.
+        /// в этой коллекции всегда один аватар или пусто
+        /// </summary>
+        [JsonIgnore]
+        public virtual List<ComplexUserAvatarModel> Avatars { get; set; } = new List<ComplexUserAvatarModel>();
 
         /// <summary>
         /// User's password data model.

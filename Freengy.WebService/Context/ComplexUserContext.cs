@@ -39,8 +39,9 @@ namespace Freengy.WebService.Context
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Configurations.Add(new PasswordConfiguration());
-            modelBuilder.Configurations.Add(new ComplexUserConfiguration());
             modelBuilder.Configurations.Add(new FriendshipConfiguration());
+            modelBuilder.Configurations.Add(new UserAvatarConfiguration());
+            modelBuilder.Configurations.Add(new ComplexUserConfiguration());
             modelBuilder.Configurations.Add(new ComplexFriendRequestConfiguration());
 
             CreateTable(modelBuilder);

@@ -88,6 +88,7 @@
     <Compile Include="Configuration\ComplexFriendRequestConfiguration.cs" />
     <Compile Include="Configuration\ComplexUserConfiguration.cs" />
     <Compile Include="Configuration\FriendshipConfiguration.cs" />
+    <Compile Include="Configuration\UserAvatarConfiguration.cs" />
     <Compile Include="Configuration\PasswordConfiguration.cs" />
     <Compile Include="Constants\ServiceDbConst.cs" />
     <Compile Include="Context\ComplexFriendRequestContext.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Models\ComplexAccountState.cs" />
     <Compile Include="Models\ComplexFriendRequest.cs" />
     <Compile Include="Models\ComplexUserAccount.cs" />
+    <Compile Include="Models\ComplexUserAvatarModel.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
     <Compile Include="Models\Password.cs" />
     <Compile Include="Modules\EditModule.cs" />
@@ -122,6 +124,7 @@
     <Compile Include="Services\ExpirienceService.cs" />
     <Compile Include="Services\FriendRequestService.cs" />
     <Compile Include="Services\FriendshipService.cs" />
+    <Compile Include="Services\ImageService.cs" />
     <Compile Include="Services\PasswordService.cs" />
     <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\ServicesInitializer.cs" />
