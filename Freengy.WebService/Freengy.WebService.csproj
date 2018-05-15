@@ -95,6 +95,7 @@
     <Compile Include="Context\ComplexUserContext.cs" />
     <Compile Include="Context\FriendshipContext.cs" />
     <Compile Include="Context\PasswordContext.cs" />
+    <Compile Include="Context\UserAvatarContext.cs" />
     <Compile Include="Exceptions\ClientNotAuthorizedException.cs" />
     <Compile Include="Exceptions\UserNotFoundException.cs" />
     <Compile Include="Extensions\FriendRequestExtensions.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Models\ComplexUserAvatarModel.cs" />
     <Compile Include="Models\FriendshipModel.cs" />
     <Compile Include="Models\Password.cs" />
+    <Compile Include="Modules\AvatarModule.cs" />
     <Compile Include="Modules\EditModule.cs" />
     <Compile Include="Modules\FriendRequestModule.cs" />
     <Compile Include="Modules\HelloModule.cs" />

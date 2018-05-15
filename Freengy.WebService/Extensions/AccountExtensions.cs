@@ -3,6 +3,7 @@
 //
 
 using Freengy.Common.Models;
+using Freengy.Common.Models.Avatar;
 using Freengy.WebService.Models;
 
 
@@ -39,6 +40,17 @@ namespace Freengy.WebService.Extensions
             ComplexUserAccount complex = CreateFrom((UserAccountModel) otherAccount);
 
             return complex;
+        }
+
+        public static UserAvatarModel ToSimple(this AvatarModel<ComplexUserAccount> complexAvatar) 
+        {
+            return new UserAvatarModel
+            {
+                Id = complexAvatar.Id,
+                ParentId = complexAvatar.ParentId,
+                ImageBlob = complexAvatar.ImageBlob,
+                LastModified = complexAvatar.LastModified
+            };
         }
 
 
