@@ -32,7 +32,7 @@ namespace Freengy.WebService.Services
 {
     internal class AccountStateService : IService 
     {
-        private static readonly int maxFailResponces = 3;
+        private static readonly int maxFailResponces = 2;
         private static readonly int updatePeriodInMs = 1000;
         private static readonly object Locker = new object();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
