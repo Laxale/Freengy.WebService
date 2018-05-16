@@ -7,6 +7,7 @@ using Freengy.Common.Database;
 using Freengy.Common.Models;
 using Freengy.Common.Models.Avatar;
 using Freengy.WebService.Context;
+using Freengy.WebService.Extensions;
 using Freengy.WebService.Interfaces;
 using Freengy.WebService.Models;
 
@@ -55,6 +56,55 @@ namespace Freengy.WebService.Services
                 var targetAvatar = context.Objects.FirstOrDefault(avatarModel => avatarModel.ParentId == userId);
 
                 return targetAvatar;
+            }
+        }
+
+        public ComplexUserAvatarModel SaveUserAvatar(ComplexUserAvatarModel avatarModel) 
+        {
+            using (var context = new UserAvatarContext())
+            {
+                var existingAvatar = context.Objects.FirstOrDefault(model => model.ParentId == avatarModel.ParentId);
+
+                if (existingAvatar == null)
+                {
+                    context.Objects.Add(avatarModel);
+                }
+                else
+                {
+                    existingAvatar.AcceptProperties(avatarModel);
+                }
+
+                context.SaveChanges();
+
+                return existingAvatar;
+            }
+        }
+
+        public ComplexUserAvatarModel SaveUserAvatar(Guid userId, byte[] avatarBlob) 
+        {
+            using (var context = new UserAvatarContext())
+            {
+                var existingAvatar = context.Objects.FirstOrDefault(model => model.ParentId == userId);
+
+                if (existingAvatar == null)
+                {
+                    var newAvatar = new ComplexUserAvatarModel
+                    {
+                        ParentId = userId,
+                        AvatarBlob = avatarBlob,
+                        LastModified = DateTime.Now
+                    };
+
+                    context.Objects.Add(newAvatar);
+                }
+                else
+                {
+                    existingAvatar.AvatarBlob = avatarBlob;
+                }
+
+                context.SaveChanges();
+
+                return existingAvatar;
             }
         }
 

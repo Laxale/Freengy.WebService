@@ -131,6 +131,7 @@ namespace Freengy.WebService.Services
 
                     EditSimpleProperties(editRequest, targetAccState.ComplexAccount);
                     AccountDbInteracter.Instance.AddOrUpdate(targetAccState.ComplexAccount);
+                    ImageService.Instance.SaveUserAvatar(targetAccState.ComplexAccount.Id, editRequest.NewImageBlob);
 
                     Task.Run(() => informerService.NotifyAllFriendsAboutUser(targetAccState));
                 }

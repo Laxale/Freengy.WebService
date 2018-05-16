@@ -2,6 +2,7 @@
 //
 //
 
+using System;
 using Freengy.Common.Models;
 using Freengy.Common.Models.Avatar;
 using Freengy.WebService.Models;
@@ -66,7 +67,17 @@ namespace Freengy.WebService.Extensions
                 Expirience = otherAccount.Expirience,
                 RegistrationTime = otherAccount.RegistrationTime,
             };
+
             return complex;
+        }
+
+        public static void AcceptProperties(this ComplexUserAvatarModel acceptor, ComplexUserAvatarModel donor)
+        {
+            if(acceptor.Id != donor.Id) throw new InvalidOperationException($"Avatar id mismatch");
+            if(acceptor.ParentId != donor.ParentId) throw new InvalidOperationException($"Avatar parent id mismatch");
+
+            acceptor.AvatarBlob = donor.AvatarBlob;
+            acceptor.LastModified = DateTime.Now;
         }
     }
 }
