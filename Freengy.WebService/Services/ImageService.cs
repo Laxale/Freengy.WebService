@@ -100,6 +100,7 @@ namespace Freengy.WebService.Services
                 else
                 {
                     existingAvatar.AvatarBlob = avatarBlob;
+                    existingAvatar.LastModified = DateTime.Now;
                 }
 
                 context.SaveChanges();

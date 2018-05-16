@@ -23,7 +23,8 @@ namespace Freengy.WebService.Services
 
         private static ExpirienceService instance;
 
-        private readonly int expAdditionTimeout = 6000;
+        //private readonly int expAdditionTimeout = 6000; // 6 sec
+        private readonly int expAdditionTimeout = 600000; // 10 min
         private readonly DelayedEventInvoker delayedInvoker;
         private readonly AccountStateService stateService = AccountStateService.Instance;
         private readonly UserInformerService informerService = UserInformerService.Instance;
@@ -87,7 +88,7 @@ namespace Freengy.WebService.Services
             uint expAmount = ExpirienceCalculator.GetOnlineRewardForLevel(level);
             var expModel = new GainExpModel
             {
-                Amount = 418,
+                Amount = expAmount,
                 GainReason = GainExpReason.Online,
                 TimeStamp = DateTime.Now
             };
