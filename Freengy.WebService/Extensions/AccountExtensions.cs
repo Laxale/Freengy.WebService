@@ -42,13 +42,13 @@ namespace Freengy.WebService.Extensions
             return complex;
         }
 
-        public static UserAvatarModel ToSimple(this AvatarModel<ComplexUserAccount> complexAvatar) 
+        public static AvatarModel ToSimple(this ComplexUserAvatarModel complexAvatar) 
         {
-            return new UserAvatarModel
+            return new AvatarModel
             {
                 Id = complexAvatar.Id,
                 ParentId = complexAvatar.ParentId,
-                ImageBlob = complexAvatar.ImageBlob,
+                ImageBlob = complexAvatar.AvatarBlob,
                 LastModified = complexAvatar.LastModified
             };
         }

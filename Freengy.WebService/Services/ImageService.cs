@@ -48,7 +48,7 @@ namespace Freengy.WebService.Services
         /// </summary>
         /// <param name="userId">User identifier.</param>
         /// <returns>User avatar model.</returns>
-        public AvatarModel<ComplexUserAccount> GetUserAvatar(Guid userId) 
+        public ComplexUserAvatarModel GetUserAvatar(Guid userId) 
         {
             using (var context = new UserAvatarContext())
             {
@@ -63,7 +63,7 @@ namespace Freengy.WebService.Services
         /// </summary>
         /// <param name="userIds">Users identifiers collection.</param>
         /// <returns>User avatar models.</returns>
-        public IEnumerable<AvatarModel<ComplexUserAccount>> GetUserAvatars(IEnumerable<Guid> userIds) 
+        public IEnumerable<ComplexUserAvatarModel> GetUserAvatars(IEnumerable<Guid> userIds) 
         {
             using (var context = new UserAvatarContext())
             {
