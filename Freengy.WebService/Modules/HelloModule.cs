@@ -3,7 +3,7 @@
 //
 
 using System;
-using Freengy.WebService.Helpers;
+
 using Nancy;
 using Nancy.Security;
 
@@ -17,8 +17,6 @@ namespace Freengy.WebService.Modules
     {
         public HelloModule() 
         {
-            $"Created { nameof(HelloModule) }".WriteToConsole();
-
             //this.RequiresHttps();
             Get[Subroutes.Hello] = OnHelloRequest;
         }
@@ -26,8 +24,6 @@ namespace Freengy.WebService.Modules
 
         private dynamic OnHelloRequest(dynamic arg) 
         {
-            "Got hello request".WriteToConsole();
-
             return "Hello! This is Freengy WebService. Awesome and alive";
         }
     }
