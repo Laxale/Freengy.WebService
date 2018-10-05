@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using Freengy.Common.Helpers;
 using Freengy.WebService.Context;
 using Freengy.WebService.Helpers;
@@ -13,13 +14,21 @@ using Freengy.WebService.Models;
 
 using NLog;
 
+using SecurityDriven.Inferno;
+using SecurityDriven.Inferno.Kdf;
+using SecurityDriven.Inferno.Mac;
+using SecurityDriven.Inferno.Extensions;
+
 
 namespace Freengy.WebService.Services 
 {
     internal class PasswordService : IService 
     {
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly int hashBytesCount = 48;
+        private static readonly int iterationCount = 100000;
         private static readonly object Locker = new object();
+        private static readonly Func<HMAC> sha384Func = HMACFactories.HMACSHA384;
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private static PasswordService instance;
 
@@ -77,15 +86,17 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public void SavePassword(Password password, bool addToDatabase) 
+        public void SaveOrUpdatePassword(Password password, bool addToDatabase) 
         {
             if (registeredPasswords.ContainsKey(password.ParentId))
             {
-                throw new InvalidOperationException($"Password of account '{ password.ParentId }' already cahced");
+                registeredPasswords[password.ParentId] = password;
             }
-
-            registeredPasswords.Add(password.ParentId, password);
-
+            else
+            {
+                registeredPasswords.Add(password.ParentId, password);
+            }
+            
             if (addToDatabase)
             {
                 using (var context = new PasswordContext())
@@ -94,7 +105,7 @@ namespace Freengy.WebService.Services
 
                     if (existingPass != null)
                     {
-                        throw new InvalidOperationException($"Password of account '{ password.ParentId }' already stored in db");
+                        context.Objects.Remove(existingPass);
                     }
 
                     context.Objects.Add(password);
@@ -117,7 +128,7 @@ namespace Freengy.WebService.Services
             }
         }
 
-        public bool ValidatePassword(Guid userId, string saltedPasswordHash) 
+        public bool ValidatePassword(Guid userId, string password) 
         {
             Password targetPassword = registeredPasswords[userId];
 
@@ -126,25 +137,30 @@ namespace Freengy.WebService.Services
                 throw new InvalidOperationException($"Password for user id '{ userId }' is not registered");
             }
 
-            var hasher = new Hasher();
-            var doubleHash = hasher.GetHash(targetPassword.NextLoginSalt + saltedPasswordHash);
+            byte[] saltBytes = targetPassword.NextLoginSalt.FromB64();
+            byte[] storedHashBytes = targetPassword.NextPasswordHash.FromB64();
+            byte[] passedHashBytes =
+                new PBKDF2(sha384Func, password, saltBytes, iterationCount)
+                    .GetBytes(hashBytesCount);
 
-            bool areEqual = doubleHash == targetPassword.NextPasswordHash;
+            bool areEqual = Utils.ConstantTimeEqual(storedHashBytes, passedHashBytes);
 
             return areEqual;
         }
 
         public Password CreatePasswordData(string password) 
         {
-            var hasher = new Hasher();
-            string nextSalt = hasher.GetHash(Guid.NewGuid().ToString());
-            string passwordHash = hasher.GetHash(nextSalt + password);
-            string nextTotalHash = hasher.GetHash(nextSalt + passwordHash);
+            byte[] saltBytes = new byte[hashBytesCount];
+            new CryptoRandom().NextBytes(saltBytes);
+            string nextSalt = saltBytes.ToB64();
+            byte[] hashBytes = 
+                new PBKDF2(sha384Func, password, saltBytes, iterationCount)
+                .GetBytes(hashBytesCount);
 
             var passwordData = new Password
             {
                 NextLoginSalt = nextSalt,
-                NextPasswordHash = nextTotalHash
+                NextPasswordHash = hashBytes.ToB64()
             };
 
             return passwordData;

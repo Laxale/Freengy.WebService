@@ -154,7 +154,7 @@ namespace Freengy.WebService.Services
                     AccountDbInteracter.Instance.AddOrUpdate(trimmedComplexAcc);
 
                     stateService.RegisterNewUserState(trimmedComplexAcc);
-                    passwordService.SavePassword(newAccount.PasswordDatas[0], false);
+                    passwordService.SaveOrUpdatePassword(newAccount.PasswordDatas[0], false);
 
                     registeredAcc = trimmedComplexAcc;
 

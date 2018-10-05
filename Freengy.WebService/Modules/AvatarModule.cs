@@ -59,7 +59,7 @@ namespace Freengy.WebService.Modules
                 var avatars = 
                     imageService
                         .GetUserAvatars(userIds)
-                        .Select(complexAvatar => complexAvatar.ToSimple())
+                        .Select(complexAvatar => new BinaryDataModel { Blob = complexAvatar.AvatarBlob, LastModified = complexAvatar.LastModified })
                         .ToList();
 
                 responceData.UserAvatars = avatars;

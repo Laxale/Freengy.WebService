@@ -28,6 +28,8 @@ namespace Freengy.WebService.Modules
     /// </summary>
     public class LogInModule : NancyModule 
     {
+        private static readonly PasswordService passwordService = PasswordService.Instance;
+
         private LoginModel logInRequest;
 
         
@@ -51,7 +53,7 @@ namespace Freengy.WebService.Modules
                 return HttpStatusCode.Unauthorized;
             }
 
-            bool isPasswordValid = PasswordService.Instance.ValidatePassword(realAccount.Id, logInRequest.PasswordHash);
+            bool isPasswordValid = PasswordService.Instance.ValidatePassword(realAccount.Id, logInRequest.Password);
 
             if (!isPasswordValid)
             {
@@ -88,25 +90,37 @@ namespace Freengy.WebService.Modules
             var jsonResponse = new JsonResponse<AccountStateModel>(accountState.ToSimple(), new DefaultJsonSerializer());
             SetAuthHeaders(jsonResponse.Headers, accountState.ClientAuth);
 
+            SetNextPasswordData(logInRequest);
+
             $"Logged '{ logInRequest.Account.Name }' { direction }".WriteToConsole(isLoggingIn ? ConsoleColor.Green : ConsoleColor.Magenta);
 
             return jsonResponse;
         }
 
-        private string GetUserAddress(Request httpRequest) 
+
+        private static void SetNextPasswordData(LoginModel logInRequest) 
+        {
+            Password currentPassword = passwordService.GetPasswordOf(logInRequest.Account.Id);
+            Password nextPassword = passwordService.CreatePasswordData(logInRequest.Password);
+            nextPassword.Id = currentPassword.Id;
+            nextPassword.ParentId = currentPassword.ParentId;
+            passwordService.SaveOrUpdatePassword(nextPassword, true);
+        }
+
+        private static string GetUserAddress(Request httpRequest) 
         {
             IEnumerable<string> headerValue = httpRequest.Headers[FreengyHeaders.Client.ClientAddressHeaderName];
 
             return headerValue.First();
         }
 
-        private void SetAuthHeaders(IDictionary<string, string> headers, SessionAuth auth) 
+        private static void SetAuthHeaders(IDictionary<string, string> headers, SessionAuth auth) 
         {
             headers.Add(FreengyHeaders.Client.ClientAddressHeaderName, auth.ClientToken);
             headers.Add(FreengyHeaders.Server.ServerSessionTokenHeaderName, auth.ServerToken);
         }
 
-        private ComplexAccountState LogInOrOut(LoginModel logInRequest, string userAddress)
+        private static ComplexAccountState LogInOrOut(LoginModel logInRequest, string userAddress) 
         {
             bool isLoggingIn = logInRequest.IsLoggingIn;
             var stateService = AccountStateService.Instance;

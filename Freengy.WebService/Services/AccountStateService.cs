@@ -26,13 +26,16 @@ using Freengy.WebService.Models;
 using Freengy.WebService.Interfaces;
 
 using NLog;
+using SecurityDriven.Inferno;
+using SecurityDriven.Inferno.Extensions;
 
 
 namespace Freengy.WebService.Services 
 {
-    internal class AccountStateService : IService 
+    internal class AccountStateService : IService
     {
         private static readonly int maxFailResponces = 2;
+        private static readonly int tokenBytesCount = 256;
         private static readonly int updatePeriodInMs = 1000;
         private static readonly object Locker = new object();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -276,9 +279,8 @@ namespace Freengy.WebService.Services
 
         private string CreateNewToken() 
         {
-            string source = Guid.NewGuid().ToString();
-
-            string token = new Hasher().GetHash(source);
+            byte[] tokenBytes = new CryptoRandom().NextBytes(tokenBytesCount);
+            string token = tokenBytes.ToB64();
 
             return token;
         }
